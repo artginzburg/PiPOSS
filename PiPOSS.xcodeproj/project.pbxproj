@@ -1,0 +1,598 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		97BAF77228B56C0300423FA5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97BAF77128B56C0300423FA5 /* AppDelegate.swift */; };
+		97BAF77628B56C0300423FA5 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF77428B56C0300423FA5 /* Main.html */; };
+		97BAF77828B56C0300423FA5 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF77728B56C0300423FA5 /* Icon.png */; };
+		97BAF77A28B56C0300423FA5 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF77928B56C0300423FA5 /* Style.css */; };
+		97BAF77C28B56C0300423FA5 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF77B28B56C0300423FA5 /* Script.js */; };
+		97BAF77E28B56C0300423FA5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97BAF77D28B56C0300423FA5 /* ViewController.swift */; };
+		97BAF78128B56C0300423FA5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF77F28B56C0300423FA5 /* Main.storyboard */; };
+		97BAF78328B56C0400423FA5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF78228B56C0400423FA5 /* Assets.xcassets */; };
+		97BAF78B28B56C0400423FA5 /* PiPOSS Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 97BAF78A28B56C0400423FA5 /* PiPOSS Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		97BAF79028B56C0400423FA5 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97BAF78F28B56C0400423FA5 /* SafariWebExtensionHandler.swift */; };
+		97BAF79328B56C0400423FA5 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79228B56C0400423FA5 /* _locales */; };
+		97BAF79528B56C0400423FA5 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79428B56C0400423FA5 /* images */; };
+		97BAF79728B56C0400423FA5 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79628B56C0400423FA5 /* manifest.json */; };
+		97BAF79928B56C0400423FA5 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79828B56C0400423FA5 /* background.js */; };
+		97BAF79B28B56C0400423FA5 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79A28B56C0400423FA5 /* content.js */; };
+		97BAF79D28B56C0400423FA5 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79C28B56C0400423FA5 /* popup.html */; };
+		97BAF79F28B56C0400423FA5 /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79E28B56C0400423FA5 /* popup.css */; };
+		97BAF7A128B56C0400423FA5 /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF7A028B56C0400423FA5 /* popup.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		97BAF78C28B56C0400423FA5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97BAF76628B56C0300423FA5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 97BAF78928B56C0400423FA5;
+			remoteInfo = "PiPOSS Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		97BAF7A928B56C0400423FA5 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				97BAF78B28B56C0400423FA5 /* PiPOSS Extension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		97BAF76E28B56C0300423FA5 /* PiPOSS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PiPOSS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		97BAF77128B56C0300423FA5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		97BAF77528B56C0300423FA5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
+		97BAF77728B56C0300423FA5 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		97BAF77928B56C0300423FA5 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		97BAF77B28B56C0300423FA5 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		97BAF77D28B56C0300423FA5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		97BAF78028B56C0300423FA5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		97BAF78228B56C0400423FA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		97BAF78428B56C0400423FA5 /* PiPOSS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PiPOSS.entitlements; sourceTree = "<group>"; };
+		97BAF78528B56C0400423FA5 /* PiPOSS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PiPOSS.entitlements; sourceTree = "<group>"; };
+		97BAF78A28B56C0400423FA5 /* PiPOSS Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "PiPOSS Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		97BAF78F28B56C0400423FA5 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		97BAF79228B56C0400423FA5 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; path = _locales; sourceTree = "<group>"; };
+		97BAF79428B56C0400423FA5 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
+		97BAF79628B56C0400423FA5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		97BAF79828B56C0400423FA5 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
+		97BAF79A28B56C0400423FA5 /* content.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = content.js; sourceTree = "<group>"; };
+		97BAF79C28B56C0400423FA5 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = popup.html; sourceTree = "<group>"; };
+		97BAF79E28B56C0400423FA5 /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
+		97BAF7A028B56C0400423FA5 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
+		97BAF7A228B56C0400423FA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		97BAF7A328B56C0400423FA5 /* PiPOSS_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PiPOSS_Extension.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		97BAF76B28B56C0300423FA5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		97BAF78728B56C0400423FA5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		97BAF76528B56C0300423FA5 = {
+			isa = PBXGroup;
+			children = (
+				97BAF77028B56C0300423FA5 /* PiPOSS */,
+				97BAF78E28B56C0400423FA5 /* PiPOSS Extension */,
+				97BAF76F28B56C0300423FA5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		97BAF76F28B56C0300423FA5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				97BAF76E28B56C0300423FA5 /* PiPOSS.app */,
+				97BAF78A28B56C0400423FA5 /* PiPOSS Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		97BAF77028B56C0300423FA5 /* PiPOSS */ = {
+			isa = PBXGroup;
+			children = (
+				97BAF77128B56C0300423FA5 /* AppDelegate.swift */,
+				97BAF77D28B56C0300423FA5 /* ViewController.swift */,
+				97BAF77F28B56C0300423FA5 /* Main.storyboard */,
+				97BAF78228B56C0400423FA5 /* Assets.xcassets */,
+				97BAF78428B56C0400423FA5 /* PiPOSS.entitlements */,
+				97BAF78528B56C0400423FA5 /* PiPOSS.entitlements */,
+				97BAF77328B56C0300423FA5 /* Resources */,
+			);
+			path = PiPOSS;
+			sourceTree = "<group>";
+		};
+		97BAF77328B56C0300423FA5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				97BAF77428B56C0300423FA5 /* Main.html */,
+				97BAF77728B56C0300423FA5 /* Icon.png */,
+				97BAF77928B56C0300423FA5 /* Style.css */,
+				97BAF77B28B56C0300423FA5 /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		97BAF78E28B56C0400423FA5 /* PiPOSS Extension */ = {
+			isa = PBXGroup;
+			children = (
+				97BAF78F28B56C0400423FA5 /* SafariWebExtensionHandler.swift */,
+				97BAF7A228B56C0400423FA5 /* Info.plist */,
+				97BAF7A328B56C0400423FA5 /* PiPOSS_Extension.entitlements */,
+				97BAF79128B56C0400423FA5 /* Resources */,
+			);
+			path = "PiPOSS Extension";
+			sourceTree = "<group>";
+		};
+		97BAF79128B56C0400423FA5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				97BAF79228B56C0400423FA5 /* _locales */,
+				97BAF79428B56C0400423FA5 /* images */,
+				97BAF79628B56C0400423FA5 /* manifest.json */,
+				97BAF79828B56C0400423FA5 /* background.js */,
+				97BAF79A28B56C0400423FA5 /* content.js */,
+				97BAF79C28B56C0400423FA5 /* popup.html */,
+				97BAF79E28B56C0400423FA5 /* popup.css */,
+				97BAF7A028B56C0400423FA5 /* popup.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		97BAF76D28B56C0300423FA5 /* PiPOSS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97BAF7AA28B56C0400423FA5 /* Build configuration list for PBXNativeTarget "PiPOSS" */;
+			buildPhases = (
+				97BAF76A28B56C0300423FA5 /* Sources */,
+				97BAF76B28B56C0300423FA5 /* Frameworks */,
+				97BAF76C28B56C0300423FA5 /* Resources */,
+				97BAF7A928B56C0400423FA5 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				97BAF78D28B56C0400423FA5 /* PBXTargetDependency */,
+			);
+			name = PiPOSS;
+			productName = PiPOSS;
+			productReference = 97BAF76E28B56C0300423FA5 /* PiPOSS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		97BAF78928B56C0400423FA5 /* PiPOSS Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97BAF7A628B56C0400423FA5 /* Build configuration list for PBXNativeTarget "PiPOSS Extension" */;
+			buildPhases = (
+				97BAF78628B56C0400423FA5 /* Sources */,
+				97BAF78728B56C0400423FA5 /* Frameworks */,
+				97BAF78828B56C0400423FA5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PiPOSS Extension";
+			productName = "PiPOSS Extension";
+			productReference = 97BAF78A28B56C0400423FA5 /* PiPOSS Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		97BAF76628B56C0300423FA5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1340;
+				LastUpgradeCheck = 1340;
+				TargetAttributes = {
+					97BAF76D28B56C0300423FA5 = {
+						CreatedOnToolsVersion = 13.4.1;
+					};
+					97BAF78928B56C0400423FA5 = {
+						CreatedOnToolsVersion = 13.4.1;
+					};
+				};
+			};
+			buildConfigurationList = 97BAF76928B56C0300423FA5 /* Build configuration list for PBXProject "PiPOSS" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 97BAF76528B56C0300423FA5;
+			productRefGroup = 97BAF76F28B56C0300423FA5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				97BAF76D28B56C0300423FA5 /* PiPOSS */,
+				97BAF78928B56C0400423FA5 /* PiPOSS Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		97BAF76C28B56C0300423FA5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97BAF77828B56C0300423FA5 /* Icon.png in Resources */,
+				97BAF78128B56C0300423FA5 /* Main.storyboard in Resources */,
+				97BAF77C28B56C0300423FA5 /* Script.js in Resources */,
+				97BAF77628B56C0300423FA5 /* Main.html in Resources */,
+				97BAF78328B56C0400423FA5 /* Assets.xcassets in Resources */,
+				97BAF77A28B56C0300423FA5 /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		97BAF78828B56C0400423FA5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97BAF79928B56C0400423FA5 /* background.js in Resources */,
+				97BAF79F28B56C0400423FA5 /* popup.css in Resources */,
+				97BAF79D28B56C0400423FA5 /* popup.html in Resources */,
+				97BAF79528B56C0400423FA5 /* images in Resources */,
+				97BAF79728B56C0400423FA5 /* manifest.json in Resources */,
+				97BAF79328B56C0400423FA5 /* _locales in Resources */,
+				97BAF79B28B56C0400423FA5 /* content.js in Resources */,
+				97BAF7A128B56C0400423FA5 /* popup.js in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		97BAF76A28B56C0300423FA5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97BAF77E28B56C0300423FA5 /* ViewController.swift in Sources */,
+				97BAF77228B56C0300423FA5 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		97BAF78628B56C0400423FA5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97BAF79028B56C0400423FA5 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		97BAF78D28B56C0400423FA5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 97BAF78928B56C0400423FA5 /* PiPOSS Extension */;
+			targetProxy = 97BAF78C28B56C0400423FA5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		97BAF77428B56C0300423FA5 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				97BAF77528B56C0300423FA5 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		97BAF77F28B56C0300423FA5 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				97BAF78028B56C0300423FA5 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		97BAF7A428B56C0400423FA5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		97BAF7A528B56C0400423FA5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		97BAF7A728B56C0400423FA5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "PiPOSS Extension/PiPOSS_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PiPOSS Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "PiPOSS Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.artginzburg.PiPOSS.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		97BAF7A828B56C0400423FA5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "PiPOSS Extension/PiPOSS_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PiPOSS Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "PiPOSS Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.artginzburg.PiPOSS.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		97BAF7AB28B56C0400423FA5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PiPOSS/PiPOSS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PiPOSS;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.artginzburg.PiPOSS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		97BAF7AC28B56C0400423FA5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PiPOSS/PiPOSS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PiPOSS;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.artginzburg.PiPOSS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		97BAF76928B56C0300423FA5 /* Build configuration list for PBXProject "PiPOSS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				97BAF7A428B56C0400423FA5 /* Debug */,
+				97BAF7A528B56C0400423FA5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		97BAF7A628B56C0400423FA5 /* Build configuration list for PBXNativeTarget "PiPOSS Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				97BAF7A728B56C0400423FA5 /* Debug */,
+				97BAF7A828B56C0400423FA5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		97BAF7AA28B56C0400423FA5 /* Build configuration list for PBXNativeTarget "PiPOSS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				97BAF7AB28B56C0400423FA5 /* Debug */,
+				97BAF7AC28B56C0400423FA5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 97BAF76628B56C0300423FA5 /* Project object */;
+}
