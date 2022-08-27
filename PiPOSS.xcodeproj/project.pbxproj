@@ -20,11 +20,9 @@
 		97BAF79328B56C0400423FA5 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79228B56C0400423FA5 /* _locales */; };
 		97BAF79528B56C0400423FA5 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79428B56C0400423FA5 /* images */; };
 		97BAF79728B56C0400423FA5 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79628B56C0400423FA5 /* manifest.json */; };
-		97BAF79928B56C0400423FA5 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79828B56C0400423FA5 /* background.js */; };
 		97BAF79B28B56C0400423FA5 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79A28B56C0400423FA5 /* content.js */; };
 		97BAF79D28B56C0400423FA5 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79C28B56C0400423FA5 /* popup.html */; };
 		97BAF79F28B56C0400423FA5 /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79E28B56C0400423FA5 /* popup.css */; };
-		97BAF7A128B56C0400423FA5 /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF7A028B56C0400423FA5 /* popup.js */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,11 +66,9 @@
 		97BAF79228B56C0400423FA5 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; path = _locales; sourceTree = "<group>"; };
 		97BAF79428B56C0400423FA5 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
 		97BAF79628B56C0400423FA5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
-		97BAF79828B56C0400423FA5 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		97BAF79A28B56C0400423FA5 /* content.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = content.js; sourceTree = "<group>"; };
 		97BAF79C28B56C0400423FA5 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = popup.html; sourceTree = "<group>"; };
 		97BAF79E28B56C0400423FA5 /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
-		97BAF7A028B56C0400423FA5 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
 		97BAF7A228B56C0400423FA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		97BAF7A328B56C0400423FA5 /* PiPOSS_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PiPOSS_Extension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -155,11 +151,9 @@
 				97BAF79228B56C0400423FA5 /* _locales */,
 				97BAF79428B56C0400423FA5 /* images */,
 				97BAF79628B56C0400423FA5 /* manifest.json */,
-				97BAF79828B56C0400423FA5 /* background.js */,
 				97BAF79A28B56C0400423FA5 /* content.js */,
 				97BAF79C28B56C0400423FA5 /* popup.html */,
 				97BAF79E28B56C0400423FA5 /* popup.css */,
-				97BAF7A028B56C0400423FA5 /* popup.js */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -258,14 +252,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				97BAF79928B56C0400423FA5 /* background.js in Resources */,
 				97BAF79F28B56C0400423FA5 /* popup.css in Resources */,
 				97BAF79D28B56C0400423FA5 /* popup.html in Resources */,
 				97BAF79528B56C0400423FA5 /* images in Resources */,
 				97BAF79728B56C0400423FA5 /* manifest.json in Resources */,
 				97BAF79328B56C0400423FA5 /* _locales in Resources */,
 				97BAF79B28B56C0400423FA5 /* content.js in Resources */,
-				97BAF7A128B56C0400423FA5 /* popup.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,8 +428,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "PiPOSS Extension/PiPOSS_Extension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R2294BC6J8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PiPOSS Extension/Info.plist";
@@ -466,8 +460,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "PiPOSS Extension/PiPOSS_Extension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R2294BC6J8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PiPOSS Extension/Info.plist";
@@ -499,13 +495,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PiPOSS/PiPOSS.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R2294BC6J8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PiPOSS;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 Art Ginzburg. All rights reserved.";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -534,13 +533,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PiPOSS/PiPOSS.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R2294BC6J8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PiPOSS;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 Art Ginzburg. All rights reserved.";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
