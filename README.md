@@ -1,10 +1,12 @@
-<h1 align="center">
-   PiPOSS
-</h1>
+<div align="center">
 
-<p align="center">
-   Brings Picture in Picture shortcut and custom button to any video.
-</p>
+<img src="PiPOSS/Resources/Icon.png" width="200" height="200">
+
+# PiPOSS
+
+Brings Picture in Picture shortcut and custom button to any video.
+
+</div>
 
 ## Install
 
@@ -31,6 +33,7 @@ Now you'll be able to use <kbd>P</kbd> on your keyboard to toggle Picture in Pic
 > Also, YouTube will have a button for Picture in Picture.
 
 ### Tips
+
 If macOS refuses to run the app, run it via <kbd>Ctrl</kbd>+<kbd>Click</kbd> > `Open`.
 
 [cask]: https://github.com/artginzburg/homebrew-tap/blob/main/Casks/piposs.rb
