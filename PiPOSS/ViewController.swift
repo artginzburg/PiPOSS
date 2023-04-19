@@ -36,13 +36,43 @@ class ViewController: NSViewController, WKNavigationDelegate, WKScriptMessageHan
                 webView.evaluateJavaScript("show(\(state.isEnabled))")
             }
         }
+
+        let isHotkeyEnabled = UserDefaults(suiteName: "group.org.artginzburg.PiPOSS")!.bool(forKey: "hotkeyEnabled")
+
+        DispatchQueue.main.async {
+            webView.evaluateJavaScript("updateHotkeyEnabled(\(isHotkeyEnabled))")
+        }
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if (message.body as! String != "open-preferences") {
-            return;
+        switch message.body as! String {
+            case "toggle-hotkey":
+                toggleHotkey()
+            case "open-preferences":
+                openPreferences()
+            default:
+                break
         }
+    }
 
+    func toggleHotkey() {
+        DispatchQueue.main.async {
+            let currentValue = UserDefaults(suiteName: "group.org.artginzburg.PiPOSS")!.bool(forKey: "hotkeyEnabled");
+            let newValue = !currentValue
+            print("prev val: \(currentValue), new: \(newValue)")
+            UserDefaults(suiteName: "group.org.artginzburg.PiPOSS")!.setValue(newValue, forKey: "hotkeyEnabled")
+
+            self.webView.evaluateJavaScript("updateHotkeyEnabled(\(newValue))")
+            
+            SFSafariApplication.dispatchMessage(withName: "Hello from world", toExtensionWithIdentifier: extensionBundleIdentifier, userInfo: ["AdditionalInformation": "Goes Here"], completionHandler: {
+                    (error) -> Void in
+                        print("Dispatching message to the extension finished")
+                }
+            )
+        }
+    }
+
+    func openPreferences() {
         SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier) { error in
             DispatchQueue.main.async {
                 NSApplication.shared.terminate(nil)

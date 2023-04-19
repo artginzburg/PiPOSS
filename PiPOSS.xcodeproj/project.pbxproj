@@ -23,6 +23,7 @@
 		97BAF79B28B56C0400423FA5 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79A28B56C0400423FA5 /* content.js */; };
 		97BAF79D28B56C0400423FA5 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79C28B56C0400423FA5 /* popup.html */; };
 		97BAF79F28B56C0400423FA5 /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = 97BAF79E28B56C0400423FA5 /* popup.css */; };
+		97DAA01F28D5599500835B12 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 97DAA01E28D5599500835B12 /* background.js */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,7 @@
 		97BAF79E28B56C0400423FA5 /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
 		97BAF7A228B56C0400423FA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		97BAF7A328B56C0400423FA5 /* PiPOSS_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PiPOSS_Extension.entitlements; sourceTree = "<group>"; };
+		97DAA01E28D5599500835B12 /* background.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +153,7 @@
 				97BAF79228B56C0400423FA5 /* _locales */,
 				97BAF79428B56C0400423FA5 /* images */,
 				97BAF79628B56C0400423FA5 /* manifest.json */,
+				97DAA01E28D5599500835B12 /* background.js */,
 				97BAF79A28B56C0400423FA5 /* content.js */,
 				97BAF79C28B56C0400423FA5 /* popup.html */,
 				97BAF79E28B56C0400423FA5 /* popup.css */,
@@ -254,6 +257,7 @@
 			files = (
 				97BAF79F28B56C0400423FA5 /* popup.css in Resources */,
 				97BAF79D28B56C0400423FA5 /* popup.html in Resources */,
+				97DAA01F28D5599500835B12 /* background.js in Resources */,
 				97BAF79528B56C0400423FA5 /* images in Resources */,
 				97BAF79728B56C0400423FA5 /* manifest.json in Resources */,
 				97BAF79328B56C0400423FA5 /* _locales in Resources */,

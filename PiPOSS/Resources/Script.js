@@ -13,3 +13,23 @@ function openPreferences() {
 }
 
 document.querySelector("button.open-preferences").addEventListener("click", openPreferences);
+
+// Custom from this line.
+
+async function toggleHotkey(event) {
+    console.log(event);
+    event.preventDefault();
+//    inputToggleHotkey.checked = !event.target.checked;
+    return webkit.messageHandlers.controller.postMessage("toggle-hotkey");
+}
+
+const inputToggleHotkey = document.querySelector("input.toggle-hotkey");
+
+inputToggleHotkey.addEventListener("click", toggleHotkey);
+
+function updateHotkeyEnabled(enabled) {
+    console.log("new state:", enabled);
+    if (typeof enabled === "boolean") {
+        inputToggleHotkey.checked = enabled;
+    }
+}

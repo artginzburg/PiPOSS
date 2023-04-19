@@ -14,6 +14,10 @@
         "512": "images/icon-512.png"
     },
 
+    "background": {
+      "scripts": [ "background.js" ]
+    },
+
     "content_scripts": [{
         "js": [ "content.js" ],
         "matches": [ "*://*/*" ],
@@ -32,5 +36,5 @@
         }
     },
 
-    "permissions": [ ]
+    "permissions": [ "nativeMessaging", "activeTab" ]
 }
