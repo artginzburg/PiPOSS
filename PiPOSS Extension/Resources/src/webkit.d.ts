@@ -20,3 +20,37 @@ interface HTMLVideoElement {
   /** Sets the presentation mode for video playback */
   webkitSetPresentationMode(mode: VideoPresentationMode): void;
 }
+
+/**
+ * Browser extension API types
+ * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions
+ */
+declare namespace browser {
+  namespace commands {
+    const onCommand: {
+      addListener(callback: (command: string) => void): void;
+    };
+  }
+
+  namespace tabs {
+    interface Tab {
+      id?: number;
+      active?: boolean;
+      url?: string;
+    }
+
+    interface QueryInfo {
+      active?: boolean;
+      currentWindow?: boolean;
+    }
+
+    function query(queryInfo: QueryInfo): Promise<Tab[]>;
+    function sendMessage(tabId: number, message: any): Promise<any>;
+  }
+
+  namespace runtime {
+    const onMessage: {
+      addListener(callback: (message: any, sender: any, sendResponse: (response?: any) => void) => void | boolean): void;
+    };
+  }
+}

@@ -13,6 +13,7 @@ const hotkey = 'p';
 const hotkeyUppercase = hotkey.toUpperCase();
 
 enableHotkey();
+enableCommandListener();
 addCustomButtons();
 observeMutations();
 
@@ -21,6 +22,14 @@ function enableHotkey(): void {
 
   document.addEventListener('keyup', handleKeyUp, {
     passive: true,
+  });
+}
+
+function enableCommandListener(): void {
+  browser.runtime.onMessage.addListener((message) => {
+    if (message.action === 'toggle-pip') {
+      togglePiPOnPage();
+    }
   });
 }
 
@@ -33,6 +42,8 @@ function handleKeyUp(event: KeyboardEvent): void {
     )
   )
     return;
+
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
 
   const hotkeyBlockingFocusedElements = ['INPUT', 'TEXTAREA'];
   const activeElement = document.activeElement as HTMLElement | null;

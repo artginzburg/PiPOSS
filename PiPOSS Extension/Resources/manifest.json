@@ -32,5 +32,19 @@
         }
     },
 
+    "commands": {
+        "toggle-pip": {
+            "suggested_key": {
+                "default": "Alt+P"
+            },
+            "description": "__MSG_toggle_pip_description__"
+        }
+    },
+
+    "background": {
+        "scripts": ["dist/background.js"],
+        "persistent": false
+    },
+
     "permissions": [ ]
 }

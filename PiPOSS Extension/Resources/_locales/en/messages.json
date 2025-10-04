@@ -6,5 +6,9 @@
     "extension_description": {
         "message": "Brings Picture in Picture shortcut and custom button to any video.",
         "description": "Description of what the extension does."
+    },
+    "toggle_pip_description": {
+        "message": "Toggle Picture in Picture",
+        "description": "Description for the toggle PiP keyboard shortcut command."
     }
 }

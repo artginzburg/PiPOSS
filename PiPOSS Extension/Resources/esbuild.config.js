@@ -5,7 +5,7 @@ async function buildAll() {
 
   /** @type {import('esbuild').BuildOptions} */
   const options = {
-    entryPoints: ['./src/content'],
+    entryPoints: ['./src/content', './src/background'],
     bundle: true,
     minify: true,
     sourcemap: 'external',
