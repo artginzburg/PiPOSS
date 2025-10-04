@@ -120,9 +120,28 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
   const pipButton = controlsContainer.querySelector('.ytp-pip-button') as HTMLButtonElement | null;
   if (pipButton) {
     pipButton.style.display = 'initial';
-    if (pipButton.ariaLabel) {
-      pipButton.ariaLabel += ` (${hotkey})`;
-      pipButton.title = pipButton.ariaLabel;
+    pipButton.ariaKeyShortcuts = 'p';
+
+    const pipButtonIcon = pipButton.querySelector('svg');
+    if (pipButtonIcon) {
+      const defaults = {
+        '--yt-delhi-pill-top-height': '8px',
+      };
+      pipButtonIcon.style.padding = `calc(var(--yt-delhi-pill-top-height, ${defaults["--yt-delhi-pill-top-height"]}) / 4) calc(var(--yt-delhi-pill-top-height, ${defaults["--yt-delhi-pill-top-height"]}) / 4 * 3)`;
+      pipButtonIcon.style.height = `${pipButtonIcon.viewBox.baseVal.height}px`;
+      pipButtonIcon.style.width = `${pipButtonIcon.viewBox.baseVal.width}px`;
+    }
+
+    // Move PiP button to right controls, before fullscreen (or AirPlay if present)
+    const rightControls = controlsContainer.querySelector('.ytp-right-controls-right') as HTMLElement | null;
+    if (rightControls) {
+      const airplayButton = rightControls.querySelector('.ytp-remote-button');
+      const fullscreenButton = rightControls.querySelector('.ytp-fullscreen-button');
+      const insertBefore = airplayButton ?? fullscreenButton;
+
+      if (insertBefore) {
+        rightControls.insertBefore(pipButton, insertBefore);
+      }
     }
   }
 
