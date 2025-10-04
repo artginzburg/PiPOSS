@@ -1,5 +1,4 @@
-/** @type {Record<string, VideoPresentationMode>} */
-const PresentationMode = {
+const PresentationMode: Record<string, VideoPresentationMode> = {
   /**
    * Picture in Picture
    */
@@ -17,7 +16,7 @@ enableHotkey();
 addCustomButtons();
 observeMutations();
 
-function enableHotkey() {
+function enableHotkey(): void {
   log('enabling hotkey');
 
   document.addEventListener('keyup', handleKeyUp, {
@@ -25,10 +24,7 @@ function enableHotkey() {
   });
 }
 
-function handleKeyUp(
-  /** @type {KeyboardEvent} */
-  event,
-) {
+function handleKeyUp(event: KeyboardEvent): void {
   if (
     !(
       event.code === `Key${hotkeyUppercase}` ||
@@ -39,9 +35,7 @@ function handleKeyUp(
     return;
 
   const hotkeyBlockingFocusedElements = ['INPUT', 'TEXTAREA'];
-  /** @type {HTMLElement | null} */
-  // @ts-expect-error todo? figure out a check whether activeElement is HTMLElement and not Element.
-  const activeElement = document.activeElement;
+  const activeElement = document.activeElement as HTMLElement | null;
   if (
     activeElement &&
     (hotkeyBlockingFocusedElements.includes(activeElement.tagName) ||
@@ -58,11 +52,11 @@ function handleKeyUp(
  * This does not select videos in `iframe`s (in Safari).
  * That's why we're running this content script for every frame on the page (via `"all_frames": true` in manifest.json)
  */
-function getVideos() {
+function getVideos(): NodeListOf<HTMLVideoElement> {
   return document.querySelectorAll('video');
 }
 
-function togglePiPOnPage(videos = getVideos()) {
+function togglePiPOnPage(videos: NodeListOf<HTMLVideoElement> = getVideos()): void {
   log('videos', videos);
 
   if (videos.length === 0) return; // No videos, stop.
@@ -78,75 +72,69 @@ function togglePiPOnPage(videos = getVideos()) {
   togglePiPOnVideo(playing[0]);
 }
 
-function togglePiPOnVideo(
-  /** @type {HTMLVideoElement} */
-  video,
-) {
+function togglePiPOnVideo(video: HTMLVideoElement): void {
   log('toggling PiP for', video);
 
   if (!video.webkitSupportsPresentationMode(PresentationMode.PIP)) return; // Current browser does not support Picture in Picture
 
-  /** @type {keyof typeof PresentationMode} */
-  const currentPresentationMode = video.webkitPresentationMode;
+  const currentPresentationMode: VideoPresentationMode = video.webkitPresentationMode;
 
   video.webkitSetPresentationMode(
     currentPresentationMode === PresentationMode.PIP
-      ? video['lastPresentationMode'] ?? PresentationMode.INLINE
+      ? (video as any)['lastPresentationMode'] ?? PresentationMode.INLINE
       : PresentationMode.PIP,
   );
 
-  video['lastPresentationMode'] = currentPresentationMode;
+  (video as any)['lastPresentationMode'] = currentPresentationMode;
 }
 
 /** This is needed because going fullscreen in YouTube, for example, enters a different layout view, so there would be no custom buttons. */
-function observeMutations() {
+function observeMutations(): void {
   new MutationObserver(addCustomButtons).observe(document, {
     subtree: true,
     childList: true,
   });
 }
 
-function addCustomButtons() {
+function addCustomButtons(): void {
   const videos = getVideos();
-  // @ts-expect-error NodeListOf is in fact iterable through a `for of` loop.
-  for (const video of videos) {
+  for (const video of Array.from(videos)) {
     if (!video.src.includes('www.youtube.com')) continue;
-    if (video.attributes['PiPOSSCustomButtonEnabled']) continue;
+    if ((video as any).attributes['PiPOSSCustomButtonEnabled']) continue;
 
-    const videoContainer = video.parentElement.parentElement;
-    const controlsContainer = videoContainer.querySelector('.ytp-right-controls');
+    const videoContainer = video.parentElement?.parentElement;
+    const controlsContainer = videoContainer?.querySelector('.ytp-right-controls');
 
-    enableBuiltinYoutubePipButton(controlsContainer);
-    video.attributes['PiPOSSCustomButtonEnabled'] = 'true';
+    enableBuiltinYoutubePipButton(controlsContainer || null);
+    (video as any).attributes['PiPOSSCustomButtonEnabled'] = 'true';
   }
 }
 
-function enableBuiltinYoutubePipButton(
-  /** @type {Element | null} */
-  controlsContainer,
-) {
+function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void {
   if (!controlsContainer) return;
 
   log('Is youtube, gonna enable button');
 
   // YouTube already has a PiP button, it's just hidden. Also, it has the same icon as the "Miniplayer (i)" button, though a little bit larger.
   // So, we either need to hide the Miniplayer button and show PiP button instead, or keep both, but replace the PiP button icon with a custom one.
-  /** @type {HTMLButtonElement | null} */
-  const pipButton = controlsContainer.querySelector('.ytp-pip-button');
-  pipButton.style.display = 'initial';
-  pipButton.ariaLabel += ` (${hotkey})`;
-  pipButton.title = pipButton.ariaLabel;
+  const pipButton = controlsContainer.querySelector('.ytp-pip-button') as HTMLButtonElement | null;
+  if (pipButton) {
+    pipButton.style.display = 'initial';
+    if (pipButton.ariaLabel) {
+      pipButton.ariaLabel += ` (${hotkey})`;
+      pipButton.title = pipButton.ariaLabel;
+    }
+  }
 
-  /** @type {HTMLButtonElement | null} */
-  const miniplayerButton = controlsContainer.querySelector('.ytp-miniplayer-button');
+  const miniplayerButton = controlsContainer.querySelector('.ytp-miniplayer-button') as HTMLButtonElement | null;
   if (!miniplayerButton) return;
 
   // removing miniplayer button instead of hiding it. Otherwise, it's being made visible automatically by YouTube.
-  miniplayerButton.parentElement.removeChild(miniplayerButton);
+  miniplayerButton.parentElement?.removeChild(miniplayerButton);
   // miniplayerButton.style.display = 'none';
 }
 
-function log(...data) {
+function log(...data: any[]): void {
   const shouldLog = false;
   if (shouldLog) {
     console.log(data);

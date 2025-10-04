@@ -4,6 +4,8 @@
 
 # PiPOSS
 
+> Abbreviation for "Picture in Picture Open Source Software"
+
 Brings Picture in Picture shortcut and custom button to any video.
 
 </div>
