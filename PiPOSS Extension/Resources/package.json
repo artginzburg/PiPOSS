@@ -1,6 +1,6 @@
 {
   "name": "piposs-extension",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "PiPOSS Safari Web Extension",
   "type": "module",
   "scripts": {
