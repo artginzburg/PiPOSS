@@ -7,7 +7,7 @@
     "build": "pnpm run lint:ts && node esbuild.config.js",
     "watch": "node esbuild.config.js --watch",
     "lint:ts": "tsc --project tsconfig.build.json --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist && mkdir dist && touch dist/.gitkeep"
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
