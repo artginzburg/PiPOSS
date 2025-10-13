@@ -2,7 +2,7 @@ interface HTMLVideoElement {
   dataset: {
     pipossCustomButtonEnabled?: `${boolean}`;
     lastPresentationMode?: VideoPresentationMode;
-  }
+  };
 }
 
 const PresentationMode = {
@@ -88,7 +88,7 @@ function togglePiPOnVideo(video: HTMLVideoElement): void {
 
   video.webkitSetPresentationMode(
     currentPresentationMode === PresentationMode.PIP
-      ? video.dataset.lastPresentationMode ?? PresentationMode.INLINE
+      ? (video.dataset.lastPresentationMode ?? PresentationMode.INLINE)
       : PresentationMode.PIP,
   );
 
@@ -134,7 +134,7 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
       const defaults = {
         '--yt-delhi-pill-top-height': '8px',
       };
-      pipButtonIcon.style.padding = `calc(var(--yt-delhi-pill-top-height, ${defaults["--yt-delhi-pill-top-height"]}) / 4) calc(var(--yt-delhi-pill-top-height, ${defaults["--yt-delhi-pill-top-height"]}) / 4 * 3)`;
+      pipButtonIcon.style.padding = `calc(var(--yt-delhi-pill-top-height, ${defaults['--yt-delhi-pill-top-height']}) / 4) calc(var(--yt-delhi-pill-top-height, ${defaults['--yt-delhi-pill-top-height']}) / 4 * 3)`;
       pipButtonIcon.style.height = `${pipButtonIcon.viewBox.baseVal.height}px`;
       pipButtonIcon.style.width = `${pipButtonIcon.viewBox.baseVal.width}px`;
     }
@@ -152,7 +152,8 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
     }
   }
 
-  const miniplayerButton = controlsContainer.querySelector<HTMLButtonElement>('.ytp-miniplayer-button');
+  const miniplayerButton =
+    controlsContainer.querySelector<HTMLButtonElement>('.ytp-miniplayer-button');
   if (!miniplayerButton) return;
 
   // removing miniplayer button instead of hiding it. Otherwise, it's being made visible automatically by YouTube.
