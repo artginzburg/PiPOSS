@@ -1,4 +1,11 @@
-const PresentationMode: Record<string, VideoPresentationMode> = {
+interface HTMLVideoElement {
+  dataset: {
+    pipossCustomButtonEnabled?: `${boolean}`;
+    lastPresentationMode?: VideoPresentationMode;
+  }
+}
+
+const PresentationMode = {
   /**
    * Picture in Picture
    */
@@ -7,7 +14,7 @@ const PresentationMode: Record<string, VideoPresentationMode> = {
    * On the page
    */
   INLINE: 'inline',
-};
+} satisfies Record<string, VideoPresentationMode>;
 
 const hotkey = 'p';
 const hotkeyUppercase = hotkey.toUpperCase();
@@ -81,11 +88,11 @@ function togglePiPOnVideo(video: HTMLVideoElement): void {
 
   video.webkitSetPresentationMode(
     currentPresentationMode === PresentationMode.PIP
-      ? (video as any)['lastPresentationMode'] ?? PresentationMode.INLINE
+      ? video.dataset.lastPresentationMode ?? PresentationMode.INLINE
       : PresentationMode.PIP,
   );
 
-  (video as any)['lastPresentationMode'] = currentPresentationMode;
+  video.dataset.lastPresentationMode = currentPresentationMode;
 }
 
 /** This is needed because going fullscreen in YouTube, for example, enters a different layout view, so there would be no custom buttons. */
@@ -100,13 +107,13 @@ function addCustomButtons(): void {
   const videos = getVideos();
   for (const video of Array.from(videos)) {
     if (!video.src.includes('www.youtube.com')) continue;
-    if ((video as any).attributes['PiPOSSCustomButtonEnabled']) continue;
+    if (video.dataset.pipossCustomButtonEnabled) continue;
 
     const videoContainer = video.parentElement?.parentElement;
     const controlsContainer = videoContainer?.querySelector('.ytp-right-controls');
 
     enableBuiltinYoutubePipButton(controlsContainer || null);
-    (video as any).attributes['PiPOSSCustomButtonEnabled'] = 'true';
+    video.dataset.pipossCustomButtonEnabled = 'true';
   }
 }
 
@@ -117,7 +124,7 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
 
   // YouTube already has a PiP button, it's just hidden. Also, it has the same icon as the "Miniplayer (i)" button, though a little bit larger.
   // So, we either need to hide the Miniplayer button and show PiP button instead, or keep both, but replace the PiP button icon with a custom one.
-  const pipButton = controlsContainer.querySelector('.ytp-pip-button') as HTMLButtonElement | null;
+  const pipButton = controlsContainer.querySelector<HTMLButtonElement>('.ytp-pip-button');
   if (pipButton) {
     pipButton.style.display = 'initial';
     pipButton.ariaKeyShortcuts = 'p';
@@ -133,7 +140,7 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
     }
 
     // Move PiP button to right controls, before fullscreen (or AirPlay if present)
-    const rightControls = controlsContainer.querySelector('.ytp-right-controls-right') as HTMLElement | null;
+    const rightControls = controlsContainer.querySelector('.ytp-right-controls-right');
     if (rightControls) {
       const airplayButton = rightControls.querySelector('.ytp-remote-button');
       const fullscreenButton = rightControls.querySelector('.ytp-fullscreen-button');
@@ -145,7 +152,7 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
     }
   }
 
-  const miniplayerButton = controlsContainer.querySelector('.ytp-miniplayer-button') as HTMLButtonElement | null;
+  const miniplayerButton = controlsContainer.querySelector<HTMLButtonElement>('.ytp-miniplayer-button');
   if (!miniplayerButton) return;
 
   // removing miniplayer button instead of hiding it. Otherwise, it's being made visible automatically by YouTube.
@@ -153,7 +160,7 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
   // miniplayerButton.style.display = 'none';
 }
 
-function log(...data: any[]): void {
+function log(...data: unknown[]): void {
   const shouldLog = false;
   if (shouldLog) {
     console.log(data);
