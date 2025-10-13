@@ -131,12 +131,26 @@ function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void 
 
     const pipButtonIcon = pipButton.querySelector('svg');
     if (pipButtonIcon) {
+      // - Logic outline:
+
+      // The PIP button SVG is for some reason bigger than the SVGs of the other buttons.
+      // So, we're going to apply additional padding to it, on top of the default padding borrowed from the other SVGs.
+      // This additional padding is what's going to center the SVG.
+      // To calculate the amount of added padding, we're just using half of the size difference of the SVGs.
+
+      // Note: It appears YouTube is centering SVGs here with pixel-tuned padding instead of automatic layout features. Cool. Sounds good for runtime performance.
+
       const defaults = {
-        '--yt-delhi-pill-top-height': '8px',
+        '--yt-delhi-pill-top-height': '12px',
       };
-      pipButtonIcon.style.padding = `calc(var(--yt-delhi-pill-top-height, ${defaults['--yt-delhi-pill-top-height']}) / 4) calc(var(--yt-delhi-pill-top-height, ${defaults['--yt-delhi-pill-top-height']}) / 4 * 3)`;
-      pipButtonIcon.style.height = `${pipButtonIcon.viewBox.baseVal.height}px`;
-      pipButtonIcon.style.width = `${pipButtonIcon.viewBox.baseVal.width}px`;
+      const originalSvgSize = 24;
+      const pipButtonSvgSize = 36;
+      const halfSvgSizeDiff = (pipButtonSvgSize - originalSvgSize) / 2;
+
+      // Original padding of the SVGs of the other buttons is: `var(--yt-delhi-pill-top-height,12px) 12px`
+      pipButtonIcon.style.padding = `calc(var(--yt-delhi-pill-top-height, ${defaults['--yt-delhi-pill-top-height']}) - ${halfSvgSizeDiff}px) ${12 - halfSvgSizeDiff}px`;
+      // Original SVGs have width and height specified explicitly in px, while this one has 100%. So for the padding to work, we're going to include it into the total size calculation via border-box.
+      pipButtonIcon.style.boxSizing = 'border-box';
     }
 
     // Move PiP button to right controls, before fullscreen (or AirPlay if present)
