@@ -92,17 +92,10 @@ the app, which is the only reason they were found at all.
 
 ## Open
 
-- [ ] **T21. The methodology metrics file**
-  `metrics/artginzburg-piposs.json`, per `~/.claude/skills/autodev/metrics/_template.json`,
-  for the PR to `vvginzburg/autodev-methodology`. Everything else T21 asked for is done:
-  RRR §10.1 is confirmed by `make check`, and REPORT.md carries the owner's acceptance
-  list. The PR itself waits for the owner.
-  Honest summary to carry into it: the reviewer role paid for itself — it refuted two
-  findings that would have caused regressions and produced the ad-hoc-signing discovery —
-  at roughly a doubling of cost per task. The strongest single technique was **mutation
-  testing**, which caught what a green suite hid six separate times. The failure mode
-  worth writing up: parallel executors broke each other three times until each was made
-  to verify in its own `git worktree`.
+- [x] **T21. The methodology metrics file** — `metrics/artginzburg-piposs.json`, submitted as
+  [autodev-methodology#1](https://github.com/vvginzburg/autodev-methodology/pull/1). Everything
+  else T21 asked for was already done: RRR §10.1 is confirmed by `make check`, and REPORT.md
+  carries the owner's acceptance list.
 
 - [ ] **BF05. The test fake is laxer than Safari, which is why BF04 was invisible**
   `test/helpers/fake-browser.ts` installs **every** namespace unconditionally, so 349
