@@ -1,0 +1,149 @@
+/*
+ * The options page's whole appearance. No third-party CSS and no web fonts
+ * (RRR §4.3): Safari opens this page in a tab, next to Safari's own settings, and
+ * anything that does not look like the system looks broken there.
+ *
+ * Three declarations carry the "native look" requirement, and each is doing work
+ * that a hand-picked value could not:
+ *
+ * 1. `color-scheme: light dark` — this is what makes the form controls
+ *    *themselves* follow the system appearance. They are drawn by the platform,
+ *    not by us, so without it a dark-mode user gets light checkboxes on a dark
+ *    page.
+ * 2. `accent-color: highlight` — checkboxes tint with the user's chosen accent
+ *    colour, as every AppKit control does.
+ * 3. The CSS system colour keywords (`Canvas`, `CanvasText`, `GrayText`,
+ *    `ButtonBorder`, `Field`) rather than hex pairs. They are the only values that
+ *    are correct in both appearances *and* under increased contrast, and they are
+ *    what `color-scheme` actually switches.
+ *
+ * Sizes are relative for the same reason: the page follows the user's text size
+ * the way a Mac window does.
+ */
+
+:root {
+  color-scheme: light dark;
+  accent-color: highlight;
+}
+
+body {
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+  font-family: system-ui;
+  line-height: 1.45;
+}
+
+main {
+  box-sizing: border-box;
+  max-width: 38rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+h1 {
+  font-size: 1.5em;
+  margin: 0 0 1.5rem;
+}
+
+h2 {
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
+section {
+  /* A hairline rather than a box: Settings panes separate groups, they do not
+     draw cards around them. */
+  border-top: 1px solid ButtonBorder;
+  padding-top: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+p {
+  margin: 0 0 0.6rem;
+}
+
+/* A control and its label on one line, wrapping rather than overflowing in a
+   narrow window — Safari opens this page in a tab the user can size freely. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.note {
+  /* The explanatory text under a control, as in Safari's own panes.
+   *
+   * BF14 f4 — this was `color: GrayText` and the owner reported it as unreadable.
+   * `GrayText` is the **disabled-control** text colour, not a secondary-label colour,
+   * and using it for enabled prose is a misuse that the measurements make plain.
+   * WCAG ratios against the page background, computed from the AppKit colours WebKit
+   * maps these keywords to (`disabledControlTextColor`, `textColor`,
+   * `textBackgroundColor`) composited in each appearance:
+   *
+   *     GrayText          light #CBCBCB on #FFFFFF  1.62   dark #686868 on #1E1E1E  2.99
+   *     CanvasText 62%    light #616161             6.19   dark #AAA9AA             7.12
+   *     (macOS secondaryLabelColor, for reference:  3.11                            7.09)
+   *
+   * 4.5 is the threshold for body text. `GrayText` fails in both appearances, and it
+   * is *worse in light mode* than in dark — the owner noticed dark first, but light was
+   * the more broken of the two.
+   *
+   * 62% is chosen rather than rounded: in dark mode it lands on 7.12 against macOS's own
+   * secondary label at 7.09, so the page keeps the native look exactly where the platform
+   * colour is legible, and beats it in light mode where the platform colour is not.
+   *
+   * The `CanvasText` line above is a real fallback, not belt-and-braces: `color-mix`
+   * needs Safari 16.2 and the deployment floor is macOS 11, whose last Safari is 15.6.
+   * There, this reads as full-contrast body text — less hierarchy, still readable, which
+   * is the right way for this to degrade. Do not "simplify" by deleting it.
+   */
+  font-size: 0.85em;
+  color: CanvasText;
+  color: color-mix(in srgb, CanvasText 62%, Canvas);
+  max-width: 34rem;
+}
+
+@media (prefers-contrast: more) {
+  /* Increased Contrast is a request, so the hierarchy goes and the text wins. */
+  .note {
+    color: CanvasText;
+  }
+}
+
+.state {
+  font-weight: 600;
+}
+
+.error:not([hidden]) {
+  /* Only ever shown after a write actually failed, so it may be loud. */
+  border: 1px solid ButtonBorder;
+  border-radius: 0.4rem;
+  padding: 0.5rem 0.7rem;
+  background: Field;
+}
+
+[data-testid='hotkey-field'] {
+  /* Narrow and centred: it holds one key. Looking like a box to type a sentence
+     into would be a lie — it is `readonly` and reads `event.key`, never its own
+     value. */
+  width: 2.5em;
+  text-align: center;
+  font-family: inherit;
+  font-size: 1em;
+}
+
+kbd {
+  font-family: inherit;
+  font-size: 0.95em;
+  border: 1px solid ButtonBorder;
+  border-radius: 0.25rem;
+  padding: 0 0.25em;
+}

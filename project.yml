@@ -1,0 +1,389 @@
+# PiPOSS — the Xcode project, as text.  Generate with `xcodegen generate`, or just
+# run any `make` target that needs the project: they all depend on it.
+#
+# The generated `PiPOSS.xcodeproj` is NOT committed (RRR §8, `.gitignore`), so this
+# file is the only place a build setting may be edited.  Editing the project in
+# Xcode's UI writes into the generated bundle and the next `make` throws it away.
+#
+# ---------------------------------------------------------------------------
+# Two things here are deliberate and easy to undo by accident.
+#
+# 1. `settingPresets: none`.  XcodeGen otherwise merges its own bundled presets into
+#    every configuration.  With them off, every setting in the generated project is one
+#    of the lines below and this file is the whole truth — which is what made T12's
+#    field-for-field comparison against the hand-maintained project meaningful
+#    (DECISIONS 10).
+#
+#    The list used to be *exhaustive* rather than merely complete, and 86 lines of it were
+#    settings for languages this project does not contain: Metal, C, C++ and Objective-C
+#    warnings and standards, `ENABLE_TESTABILITY` with no test target, string-catalog
+#    symbol generation with no `.xcstrings`.  All inherited from Xcode's template.  They
+#    are gone, and removing them changed nothing measurable — same `minos 11.0` on every
+#    slice, same warning inventory (2 `appintentsmetadataprocessor`, 1 `xcodebuild:
+#    WARNING:`, 0 Swift), zero `codesign` invocations.  So: **every setting here must be
+#    load-bearing for a four-Swift-file app plus a web extension.**  If you find one that
+#    is not, delete it and say what you re-measured.
+#
+# 2. **`CODE_SIGN_IDENTITY = "Apple Development"` in all four configurations, with
+#    `CODE_SIGN_STYLE` and `DEVELOPMENT_TEAM` — and it must stay.**  T12 removed all
+#    three so that the project could not reach the login keychain by accident, and that
+#    regressed the product: a build with no identity is signed **ad-hoc**
+#    (`flags=0x20002(adhoc,linker-signed)`, no `_CodeSignature`, `Sealed Resources=none`)
+#    and **Safari does not register a web extension from an ad-hoc-signed host app**, so
+#    the owner's extension stopped appearing (docs/research/safari-extension-signing-
+#    2026-07.md).  The two requirements do not conflict: every unattended path passes
+#    `CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""` on the
+#    command line, which beats the project — measured with these settings in place, the
+#    canonical unsigned build makes **zero** `codesign` invocations.  So the default is
+#    what a human needs and every agent path disables signing at the call site.
+#    `ENABLE_HARDENED_RUNTIME` and `CODE_SIGN_ENTITLEMENTS` describe *what* is signed
+#    rather than *who* signs it; losing them produces a bundle that cannot be notarized.
+# ---------------------------------------------------------------------------
+
+name: PiPOSS
+
+options:
+  createIntermediateGroups: true
+  # See note 1 above.  Every setting is written out below.
+  settingPresets: none
+  defaultConfig: Release
+  # Matches `LastUpgradeCheck = 2600` in the pre-migration project.
+  xcodeVersion: "2600"
+  generateEmptyDirectories: true
+
+configs:
+  Debug: debug
+  Release: release
+
+# ---------------------------------------------------------------- project level
+# Copied field for field from the pre-migration project's two project-level
+# XCBuildConfigurations, with one deliberate exception: `MACOSX_DEPLOYMENT_TARGET` was
+# 12.3 here and 11.0 on both targets.  Inert, because targets win — and inert only until
+# someone adds a third target.  Measured on an isolated XcodeGen spec of the same shape
+# (project level 12.3, one target overriding to 11.0, one target added without one):
+#
+#   $ xcodebuild -target Pinned      -showBuildSettings | grep MACOSX_DEPLOYMENT
+#       MACOSX_DEPLOYMENT_TARGET = 11.0
+#   $ xcodebuild -target AddedLater  -showBuildSettings | grep MACOSX_DEPLOYMENT
+#       MACOSX_DEPLOYMENT_TARGET = 12.3
+#
+# The new target silently ships a floor 1.3 releases above the one RRR §2 and the README
+# promise, and nothing fails.  So it is 11.0 here too, and `test/entitlements.test.ts`
+# asserts that every definition on disk states one floor and only one.  Verified inert
+# rather than assumed: both products' `LC_BUILD_VERSION` still read `minos 11.0`.
+settings:
+  configs:
+    Debug:
+      CLANG_ANALYZER_NONNULL: YES
+      CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION: YES_AGGRESSIVE
+      CLANG_ENABLE_MODULES: YES
+      DEAD_CODE_STRIPPING: YES
+      # Note 2 in the header: removing it makes every default build ad-hoc.
+      DEVELOPMENT_TEAM: R2294BC6J8
+      DEBUG_INFORMATION_FORMAT: dwarf
+      ENABLE_USER_SCRIPT_SANDBOXING: NO
+      GCC_PREPROCESSOR_DEFINITIONS:
+        - DEBUG=1
+        - $(inherited)
+      MACOSX_DEPLOYMENT_TARGET: 11.0
+      ONLY_ACTIVE_ARCH: YES
+      SDKROOT: macosx
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+      SWIFT_OPTIMIZATION_LEVEL: -Onone
+    Release:
+      CLANG_ANALYZER_NONNULL: YES
+      CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION: YES_AGGRESSIVE
+      CLANG_ENABLE_MODULES: YES
+      DEAD_CODE_STRIPPING: YES
+      # Note 2 in the header: removing it makes every default build ad-hoc.
+      DEVELOPMENT_TEAM: R2294BC6J8
+      DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+      ENABLE_NS_ASSERTIONS: NO
+      ENABLE_USER_SCRIPT_SANDBOXING: NO
+      MACOSX_DEPLOYMENT_TARGET: 11.0
+      SDKROOT: macosx
+      SWIFT_COMPILATION_MODE: wholemodule
+      SWIFT_OPTIMIZATION_LEVEL: -O
+
+targets:
+  # ------------------------------------------------------------------- the app
+  PiPOSS:
+    type: application
+    platform: macOS
+    # Files are listed one by one rather than by directory: a directory would also sweep
+    # in `PiPOSS.entitlements` as a copied resource, and it must be a reference the
+    # signer reads, never a file inside the bundle.
+    sources:
+      - path: PiPOSS/PiPOSSApp.swift
+      - path: PiPOSS/ContentView.swift
+      - path: PiPOSS/SafariSettingsDiagram.swift
+      - path: PiPOSS/Assets.xcassets
+      # The app icon, as an Icon Composer bundle (RRR §8, §10.1.9).
+      #
+      # `type: file` is **defensive, not required**, and that was measured: removing it
+      # regenerates a byte-identical project.pbxproj, because XcodeGen 2.46 treats *any*
+      # extension-bearing directory as one opaque PBXFileReference (verified against both
+      # `.icon` and a fabricated `.zzz`).  Kept because the property it states — one bundle
+      # reference in a copy phase, not `icon.json` and `Assets/glyph.svg` walked out as two
+      # loose resources — is what routes the bundle to `actool`, and losing it leaves the
+      # build green and the app on the generic icon.  `test/icon.test.ts` asserts that
+      # shape but deliberately not the file type: XcodeGen writes an invented
+      # `wrapper.icon` rather than `AssetCatalogCompiler.xcspec`'s
+      # `folder.iconcomposer.icon`, and the build system resolves `.icon` by extension
+      # anyway.  See docs/icon.md.
+      - path: AppIcon.icon
+        type: file
+      - path: PiPOSS/PiPOSS.entitlements
+        buildPhase: none
+      # README.md and docs/icon.md both render this file from disk, and the app
+      # shows it: it is a copied resource, not documentation.
+      - path: PiPOSS/Resources/Icon.png
+    dependencies:
+      - target: PiPOSS Extension
+        embed: true
+        # `codeSign: false` and `removeHeaders: true` reproduce the pre-migration
+        # embed build file exactly: `ATTRIBUTES = (RemoveHeadersOnCopy, )` with no
+        # `CodeSignOnCopy`.
+        codeSign: false
+        removeHeaders: true
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: PiPOSS/PiPOSS.entitlements
+        # Note 2 in the header: without these two the app is ad-hoc-signed and Safari
+        # will not register the extension inside it.
+        CODE_SIGN_IDENTITY: Apple Development
+        CODE_SIGN_STYLE: Automatic
+        CURRENT_PROJECT_VERSION: 5
+        DEAD_CODE_STRIPPING: YES
+        # ------------------------------------------------------------------
+        # The entitlement set, and it is decided *here* (T18, docs/app-store.md).
+        #
+        # Both `.entitlements` files are `<dict/>`.  What reaches the signature is computed
+        # from these settings by Xcode's own
+        # `SWBCore/SpecImplementations/Tools/ProductPackaging.swift`, which writes a
+        # `com.apple.security.*` key only for a setting that evaluates true — so the `NO`
+        # lines below grant nothing and are documentation only: they make the next "Update
+        # to recommended settings" a diff for the settings they name.  They are **not a
+        # complete list** (`ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY`, `ENABLE_FILE_ACCESS_*`
+        # and `AUTOMATION_APPLE_EVENTS` grant keys too and default to off), so the guard is
+        # not this comment: `make entitlements` dumps the signed product and fails on any
+        # key outside its allow-list, which covers settings that do not exist yet.
+        # Measured — flipping `ENABLE_RESOURCE_ACCESS_CAMERA` to YES ships
+        # `com.apple.security.device.camera` with the whole vitest suite green.
+        #
+        # BF13 — DO NOT REMOVE `ENABLE_OUTGOING_NETWORK_CONNECTIONS` OR
+        # `ENABLE_USER_SELECTED_FILES` AGAIN WITHOUT TESTING IN SAFARI.
+        #
+        # T18 removed both, having measured that nothing in *our* code uses them: no
+        # `URLSession`, no `fetch` in `src/`, `otool -L` links neither Network nor
+        # CFNetwork, no `NSOpenPanel`, no `downloads` permission.  All true, and all beside
+        # the point — an entitlement is what the sandbox lets the *process* do, including
+        # inside frameworks we only call into.  The owner then found
+        # `getStateOfSafariExtension` failing after three years of working, and everything
+        # else was ruled out by diffing the working 1.0.3 out of Homebrew's cache against
+        # the broken build: identical appex `Info.plist`, identical bundle identifiers, both
+        # signed `Apple Development` / team R2294BC6J8, the extension registered in Safari.
+        # These two were the only functional difference left.  So removing one is a
+        # **runtime** change to a sandboxed process, and only Safari can test it.  The set
+        # below is exactly 1.0.3's.  DECISIONS 282.
+        # ------------------------------------------------------------------
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_INCOMING_NETWORK_CONNECTIONS: NO
+        ENABLE_OUTGOING_NETWORK_CONNECTIONS: YES
+        ENABLE_RESOURCE_ACCESS_AUDIO_INPUT: NO
+        ENABLE_RESOURCE_ACCESS_BLUETOOTH: NO
+        ENABLE_RESOURCE_ACCESS_CALENDARS: NO
+        ENABLE_RESOURCE_ACCESS_CAMERA: NO
+        ENABLE_RESOURCE_ACCESS_CONTACTS: NO
+        ENABLE_RESOURCE_ACCESS_LOCATION: NO
+        ENABLE_RESOURCE_ACCESS_PRINTING: NO
+        ENABLE_RESOURCE_ACCESS_USB: NO
+        # Restored with the network grant above — see the BF13 block.
+        ENABLE_USER_SELECTED_FILES: readonly
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: PiPOSS
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_NSHumanReadableCopyright: Copyright © 2022 Art Ginzburg. All rights reserved.
+        # Required, and `INFOPLIST_KEY_NSMainStoryboardFile` must stay absent: a SwiftUI
+        # `App` still gets an AppKit main-nib load first, and it would look for a
+        # storyboard that is no longer in the bundle.
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+        LD_RUNPATH_SEARCH_PATHS:
+          - $(inherited)
+          - "@executable_path/../Frameworks"
+        MACOSX_DEPLOYMENT_TARGET: 11.0
+        MARKETING_VERSION: 2.0.0
+        OTHER_LDFLAGS:
+          # SafariServices only.  `-framework WebKit` went with the WKWebView the old
+          # AppKit app used; nothing imports WebKit now, and `otool -L` is the check.
+          - -framework
+          - SafariServices
+        PRODUCT_BUNDLE_IDENTIFIER: org.artginzburg.PiPOSS
+        PRODUCT_NAME: $(TARGET_NAME)
+        SWIFT_VERSION: 5.0
+
+  # ------------------------------------------------------------- the extension
+  PiPOSS Extension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: PiPOSS Extension/SafariWebExtensionHandler.swift
+      # Read through INFOPLIST_FILE below; it carries the NSExtension dictionary that
+      # makes this a `com.apple.Safari.web-extension`.  Listed so it is visible in Xcode,
+      # with no build phase so it is not also copied.
+      - path: PiPOSS Extension/Info.plist
+        buildPhase: none
+      - path: PiPOSS Extension/PiPOSS_Extension.entitlements
+        buildPhase: none
+      # `type: folder` keeps these folder *references*: the directory is copied as-is, so
+      # a new locale or toolbar PNG needs no project change.  `dist` in particular must
+      # stay one — it does not exist in a fresh checkout until the phase below has run.
+      - path: PiPOSS Extension/Resources/_locales
+        type: folder
+      - path: PiPOSS Extension/Resources/images
+        type: folder
+      - path: PiPOSS Extension/Resources/dist
+        type: folder
+      - path: PiPOSS Extension/Resources/manifest.json
+      - path: PiPOSS Extension/Resources/options.html
+      - path: PiPOSS Extension/Resources/options.css
+    preBuildScripts:
+      - name: Run PNPM Build
+        basedOnDependencyAnalysis: true
+        # ------------------------------------------------------------------
+        # These paths are the fix for a shipped-stale-bundle bug, not tidiness.
+        #
+        # The hand-maintained project declared the `src` and `dist` DIRECTORIES as this
+        # phase's input and output.  A directory's mtime does not change when a file inside
+        # it is edited, so after a source-only edit Xcode marked the phase up to date and
+        # shipped the previous bundle under `** BUILD SUCCEEDED **` — measured twice
+        # (DECISIONS 101): a `/*STALE*/` marker planted in `dist/content.js` survived
+        # `touch src/content.ts` + `xcodebuild` and landed inside the `.appex`.
+        #
+        # So every source file is named individually and the three real bundles are the
+        # outputs.  The directories stay as inputs *as well*: they are what notices a file
+        # being added or removed, which a list of filenames cannot.  `pnpm-workspace.yaml`
+        # is required too — without it `pnpm install --frozen-lockfile` exits 1 with
+        # ERR_PNPM_IGNORED_BUILDS and esbuild never runs (DECISIONS 14, 18).  The `test/`
+        # tree is deliberately absent even though `pnpm run build` typechecks it: nothing
+        # there can change what this phase *outputs*, and a test-only failure is `make
+        # check`'s and CI's to catch, not a reason to rebuild the bundle.
+        # ------------------------------------------------------------------
+        inputFiles:
+          - $(SRCROOT)/PiPOSS Extension/Resources/package.json
+          - $(SRCROOT)/PiPOSS Extension/Resources/pnpm-lock.yaml
+          - $(SRCROOT)/PiPOSS Extension/Resources/pnpm-workspace.yaml
+          - $(SRCROOT)/PiPOSS Extension/Resources/tsconfig.json
+          - $(SRCROOT)/PiPOSS Extension/Resources/tsconfig.build.json
+          - $(SRCROOT)/PiPOSS Extension/Resources/tsconfig.test.json
+          - $(SRCROOT)/PiPOSS Extension/Resources/esbuild.config.js
+          - $(SRCROOT)/PiPOSS Extension/Resources/src
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/background.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/browser.d.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/content.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/options.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/webkit.d.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/autopip.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/hotkey.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/inject.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/messages.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/observe.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/presentation.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/settings.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/core/video.ts
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/sites
+          - $(SRCROOT)/PiPOSS Extension/Resources/src/sites/youtube.ts
+        outputFiles:
+          - $(SRCROOT)/PiPOSS Extension/Resources/dist/content.js
+          - $(SRCROOT)/PiPOSS Extension/Resources/dist/background.js
+          - $(SRCROOT)/PiPOSS Extension/Resources/dist/options.js
+        shell: /bin/sh
+        script: |
+          # Any failing step must fail the Xcode build.
+          set -e
+
+          echo "▶️ Run PNPM Build phase started"
+          cd "$SRCROOT/PiPOSS Extension/Resources"
+
+          if [ ! -f "package.json" ]; then
+            echo "⚠️ No package.json found, skipping"
+            exit 0
+          fi
+
+          # GUI-launched Xcode does not read ~/.zshrc — add the common pnpm locations.
+          export PATH="$HOME/.local/share/pnpm:$HOME/Library/pnpm:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+          if ! command -v pnpm >/dev/null 2>&1; then
+            echo "error: pnpm not found in PATH"
+            echo "Please install pnpm: npm install -g pnpm"
+            exit 1
+          fi
+
+          echo "📦 Installing dependencies..."
+          pnpm install --frozen-lockfile
+
+          echo "🔨 Building..."
+          pnpm run build
+
+          echo "✅ Build complete"
+    settings:
+      base:
+        CODE_SIGN_ENTITLEMENTS: PiPOSS Extension/PiPOSS_Extension.entitlements
+        # Note 2 in the header.  The appex needs it in its own right: it is signed
+        # separately, and an ad-hoc appex inside a signed app is still one Safari will not
+        # register.
+        CODE_SIGN_IDENTITY: Apple Development
+        CODE_SIGN_STYLE: Automatic
+        CURRENT_PROJECT_VERSION: 5
+        DEAD_CODE_STRIPPING: YES
+        # The appex is sandboxed in its own right, and that is not optional: it is signed
+        # separately, the Mac App Store requires the sandbox on every bundle it accepts,
+        # and Xcode 26.6's own *macOS Safari Extension* template sets exactly these three.
+        # The third, `ENABLE_USER_SELECTED_FILES`, was removed by T18 and restored by BF13
+        # — read the app target's block before touching it.
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_USER_SELECTED_FILES: readonly
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: PiPOSS Extension/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: PiPOSS Extension
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        LD_RUNPATH_SEARCH_PATHS:
+          - $(inherited)
+          - "@executable_path/../Frameworks"
+          - "@executable_path/../../../../Frameworks"
+        MACOSX_DEPLOYMENT_TARGET: 11.0
+        MARKETING_VERSION: 2.0.0
+        OTHER_LDFLAGS:
+          - -framework
+          - SafariServices
+        PRODUCT_BUNDLE_IDENTIFIER: org.artginzburg.PiPOSS.Extension
+        PRODUCT_NAME: $(TARGET_NAME)
+        SKIP_INSTALL: YES
+        SWIFT_VERSION: 5.0
+
+# ------------------------------------------------------------------- schemes
+# Shared, and that is the point: before this file the `PiPOSS` scheme lived only in
+# `xcuserdata`, which `.gitignore` excludes, so `-scheme PiPOSS` worked only because
+# xcodebuild silently autocreates a scheme per target.  Declared here, it is regenerated
+# identically for everyone.
+schemes:
+  PiPOSS:
+    build:
+      targets:
+        PiPOSS: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

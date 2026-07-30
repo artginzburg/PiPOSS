@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "checkJs": false
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "vitest.config.ts", "playwright.config.ts"]
+}

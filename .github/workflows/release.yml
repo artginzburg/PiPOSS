@@ -1,0 +1,174 @@
+# Builds, signs, notarizes and staples the direct-download release, then attaches
+# the dmg to a GitHub release. The Homebrew cask lives in another repository and
+# stays a manual edit — this workflow prints the `sha256` for it.
+#
+# **One click.** Press Run workflow, optionally paste release notes, and everything
+# else happens: gates, signed build, notarization, staple, tag, GitHub release with the
+# dmg attached. The version's single source of truth is `MARKETING_VERSION` in
+# `project.yml` — the tag is derived from it, never typed.
+#
+# The one manual step left is the Homebrew cask, which lives in another repository. The
+# run summary prints the three lines to paste.
+#
+# Pushing a `v*` tag by hand also works and skips the tag creation.
+#
+# Secrets, all five documented in docs/release.md. They are **per team**, so the
+# values already used by any other app of team R2294BC6J8 work here unchanged:
+#
+#   APPLE_CERTIFICATES_P12       base64 of a .p12 holding Developer ID Application
+#   APPLE_CERTIFICATES_PASSWORD  its password
+#   ASC_KEY_ID                   App Store Connect API key id
+#   ASC_ISSUER_ID                its issuer id
+#   ASC_PRIVATE_KEY              contents of AuthKey_<id>.p8, verbatim
+#
+# Nothing lands on a developer's Mac: the certificates go into a throwaway keychain
+# in RUNNER_TEMP that dies with the runner, and the API key into a file beside it.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: Release notes (optional — GitHub generates them from commits if blank)
+        required: false
+        type: string
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, notarize, publish
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      # Resolved once, before anything expensive. A tag push must agree with
+      # project.yml rather than silently shipping a mislabelled release, and a button
+      # press must refuse to reuse a version that is already out — checked here so the
+      # refusal costs seconds instead of a notarization round trip.
+      - name: Resolve the version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(grep -m1 -E '^\s+MARKETING_VERSION:' project.yml | awk '{print $2}')
+          [ -n "$version" ] || { echo "::error::no MARKETING_VERSION in project.yml" >&2; exit 1; }
+          if [ "${GITHUB_REF}" != "${GITHUB_REF#refs/tags/v}" ]; then
+            tag="${GITHUB_REF#refs/tags/}"
+            if [ "${tag#v}" != "$version" ]; then
+              echo "::error::tag $tag does not match MARKETING_VERSION $version in project.yml" >&2
+              exit 1
+            fi
+          else
+            tag="v$version"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "::error::$tag is already released. Bump MARKETING_VERSION and CURRENT_PROJECT_VERSION in project.yml." >&2
+              exit 1
+            fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "releasing $tag"
+
+      # The runner's default Xcode is not always the newest installed one.
+      - name: Select the newest Xcode
+        run: |
+          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "DEVELOPER_DIR=$xcode/Contents/Developer" >> "$GITHUB_ENV"
+          "$xcode/Contents/Developer/usr/bin/xcodebuild" -version
+
+      # A throwaway keychain rather than the login one: the private key needs to be
+      # readable by codesign without a dialog, and `set-key-partition-list` is what
+      # grants that. It dies with the ephemeral runner.
+      - name: Import signing certificates into a temporary keychain
+        env:
+          CERTIFICATES_P12: ${{ secrets.APPLE_CERTIFICATES_P12 }}
+          CERTIFICATES_PASSWORD: ${{ secrets.APPLE_CERTIFICATES_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/release.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$CERTIFICATES_P12" | base64 --decode > "$RUNNER_TEMP/certs.p12"
+          security import "$RUNNER_TEMP/certs.p12" -P "$CERTIFICATES_PASSWORD" \
+            -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          rm "$RUNNER_TEMP/certs.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
+
+      - name: Write the App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/asc"
+          echo "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/asc/AuthKey_$ASC_KEY_ID.p8"
+          echo "ASC_PRIVATE_KEY_PATH=$RUNNER_TEMP/asc/AuthKey_$ASC_KEY_ID.p8" >> "$GITHUB_ENV"
+
+      - run: brew install xcodegen
+
+      # The same gates a developer runs, before spending Apple's time on a build
+      # that would not have passed them.
+      - run: make check
+
+      - name: Build, notarize, staple
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: scripts/release.sh
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          # Through env, never inline `${{ }}`: an input interpolates *textually* into
+          # the shell, so backticks or `$(…)` in the notes would execute on the runner.
+          # That is not hypothetical — the sibling project's v1.0.1 notes ran a command.
+          NOTES: ${{ inputs.notes }}
+        run: |
+          # `gh release create` creates the tag itself from this commit, so a build that
+          # failed earlier leaves no tag pointing at an unreleased state. A tag made with
+          # GITHUB_TOKEN does not re-trigger this workflow, so there is no loop.
+          if [ -n "$NOTES" ]; then
+            gh release create "$TAG" build/release/PiPOSS.dmg \
+              --target "$GITHUB_SHA" --title "$TAG" --notes "$NOTES"
+          else
+            gh release create "$TAG" build/release/PiPOSS.dmg \
+              --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+          fi
+
+          SHA=$(shasum -a 256 build/release/PiPOSS.dmg | cut -d' ' -f1)
+          {
+            echo "## Released $TAG"
+            echo
+            echo "The only step left is the Homebrew cask, in **artginzburg/homebrew-tap**,"
+            echo "\`Casks/piposs.rb\` — it is a different repository, so this workflow cannot"
+            echo "touch it. Paste:"
+            echo
+            echo '```ruby'
+            echo "  version \"$VERSION\""
+            echo "  sha256 \"$SHA\""
+            echo
+            echo "  url \"https://github.com/artginzburg/PiPOSS/releases/download/#{version}/PiPOSS.dmg\""
+            echo '```'
+            echo
+            echo "The asset is a **dmg** now; releases up to 1.0.3 shipped \`PiPOSS.zip\`, so the"
+            echo "\`url\` line changes too, not only the version and hash."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # So a dispatch run without a tag is still useful: the dmg is downloadable
+      # from the run page and can be checked by hand before tagging.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: PiPOSS-dmg
+          path: build/release/PiPOSS.dmg

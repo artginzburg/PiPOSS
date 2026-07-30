@@ -1,0 +1,112 @@
+# The automatic gates of RRR §10.1, on every push and every pull request.
+#
+# **Every step delegates to a `make` target that has been run on a developer machine
+# first**, so "it passes in CI" and "it passes on my machine" cannot drift apart and a red
+# run is reproducible with one command. `make check` is the local equivalent of the whole
+# job; it is split into named steps here only so a failure is labelled in the GitHub UI.
+#
+# Three things a fresh runner has to be told:
+#
+# 1. **The Xcode project does not exist in a checkout** — it is generated from
+#    `project.yml` by XcodeGen (RRR §8), which is not on the runner image, hence
+#    `brew install xcodegen`. No "is it missing" logic is repeated here: every make target
+#    that needs the project has a file rule for it.
+# 2. **The build must not be signed**, and `make app-build SIGN=no` is how, not a bare
+#    `xcodebuild`: no runner has the `Apple Development` identity `project.yml` declares
+#    (see its header note 2 for why it declares one).
+# 3. **pnpm's version is pinned by `package.json`'s `packageManager` and honoured by
+#    Corepack** (DECISIONS 19), and `pnpm-workspace.yaml`'s `allowBuilds: {esbuild: true}`
+#    is a required build input: without it `pnpm install --frozen-lockfile` exits 1 with
+#    `ERR_PNPM_IGNORED_BUILDS` and esbuild never runs (DECISIONS 14, 18). Both are
+#    committed, so nothing here arranges them — but a failing install is where to look.
+#
+# Deliberately absent:
+#
+# * **The live-DOM Playwright suite.** RRR §9 requires it to be skippable: it drives real
+#   youtube.com, so its failures would be noise. `make test` runs vitest only, and
+#   `test/live/youtube.spec.ts` asserts that `test/live/**` is excluded twice over. No
+#   `playwright install` step exists here on purpose: no browser is downloaded.
+# * **A warning-count assertion.** RRR §10.1.4 wants zero warnings introduced by us, but
+#   the inventory that makes that measurable is per-Xcode-version and has to be read off a
+#   *cold* build (DECISIONS 132, 149) — and this image's default Xcode moves. The build
+#   must exit 0; the inventory stays a documented local check.
+# * **A release / notarization workflow.** It needs secrets only the owner can add and
+#   cannot be verified without them, so it is described in `docs/development.md`.
+# * **A dependency cache.** The install is a few seconds against a several-minute Xcode
+#   build; add one when it shows up in the timings.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# A same-repository pull request also produces a push event, so its branch would
+# otherwise be built twice. This keeps only the newest run per ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: RRR 10.1 automatic gates
+    # macos-26 since June 2026. It carries seven Xcodes and its **default is 26.5**, not
+    # the 26.6 this project is developed against — this workflow sets no DEVELOPER_DIR, so
+    # the Makefile falls back to `xcode-select -p`. Harmless today, and the reason there is
+    # no warning-count assertion above. Named rather than pinned so security updates
+    # arrive; the cost is that the default Xcode can move under us.
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    env:
+      # Corepack asks before downloading a pnpm it has not cached, and on a runner a prompt
+      # is a hang rather than a failure — the same reason the Makefile exports this.
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      # `brew install` otherwise refreshes the whole formula index first, which costs more
+      # than the formula being installed.
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          # Cached on the runner image, and the major `@types/node` is pinned to.
+          node-version: '24'
+
+      - name: Enable Corepack, which honours packageManager
+        run: corepack enable pnpm
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Show the toolchain make resolved
+        run: make doctor
+
+      - name: Install dependencies
+        run: make deps
+
+      - name: Check formatting
+        run: make format-check
+
+      - name: Typecheck
+        run: make lint
+
+      - name: Test
+        run: make test
+
+      - name: Bundle
+        run: make build
+
+      - name: Generate the Xcode project
+        run: make project
+
+      - name: Build the app and the extension, unsigned
+        run: make app-build CONFIG=Release SIGN=no
+
+      # Separate from the step above because a `SIGN=no` bundle carries no entitlements at
+      # all — they are embedded by the signing step — so this one signs **ad-hoc**, which
+      # resolves no identity and therefore needs no keychain. See the Makefile's
+      # `entitlements` block: it is a verification build, and not installable.
+      - name: Assert the product's signed entitlements
+        run: make entitlements

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PiPOSS Settings</title>
+    <link rel="stylesheet" href="options.css" />
+    <!--
+      `defer`, so the DOM is complete before `src/options.ts` runs and the page
+      needs no `DOMContentLoaded` dance. Safari always opens this page in a **tab**
+      whatever `options_ui.open_in_tab` says, so it is laid out as a page.
+    -->
+    <script src="dist/options.js" defer></script>
+  </head>
+  <body>
+    <!--
+      Every value written into this markup is the RRR §3 default, so the page tells
+      the truth for the moment before `dist/options.js` has replaced it with what is
+      actually stored — and keeps telling it if the bundle is missing. Changing a
+      default in `src/core/settings.ts` without changing it here is caught by
+      `test/options.test.ts`.
+
+      `data-piposs-options` is what `initOptionsPage` looks for: it attaches nothing
+      at all when the marker is absent, which is what makes the module safe to import
+      into a test that has not built the page yet.
+    -->
+    <main data-piposs-options>
+      <h1>PiPOSS</h1>
+
+      <!--
+        RRR §4.3, rewritten 2026-07-27: this section is **a marker**, not a control. It
+        tells you where you stand and nothing else — there is deliberately no button
+        here, because only the user can widen a Safari extension's access and a button
+        whose effect you cannot rely on is worse than an honest read-out. The teaching
+        lives in the PiPOSS app (RRR §4.7), which draws the pane you are looking for.
+      -->
+      <section aria-labelledby="access-heading">
+        <h2 id="access-heading">Access to websites</h2>
+
+        <p class="state" data-testid="access-state">Checking…</p>
+
+        <p class="note" data-testid="access-note">
+          Only you can grant this, in Safari ▸ Settings ▸ Extensions ▸ PiPOSS or the popover next to
+          the toolbar button. This line follows what you choose. The toolbar button works either
+          way, on every website.
+        </p>
+
+        <!--
+          "shows you where to click", not "draws that part of Safari's settings": the
+          shipped app is still the old `Main.html`, so the drawing is T11's and this
+          sentence must be true in the build the reader is holding. It stays true when
+          T11 lands, which is why it needs no second edit — the one forward promise in
+          product UI that DECISIONS 117 does not cover, because 117 was about the README.
+        -->
+        <p class="note" data-testid="access-guide">
+          Not sure which control? The PiPOSS app draws it for you.
+        </p>
+      </section>
+
+      <section aria-labelledby="hotkey-heading">
+        <h2 id="hotkey-heading">Hotkey</h2>
+
+        <p class="row">
+          <label for="hotkey-field">Key that toggles Picture in Picture</label>
+          <input
+            id="hotkey-field"
+            data-testid="hotkey-field"
+            type="text"
+            value="P"
+            placeholder="Off"
+            size="2"
+            readonly
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            aria-describedby="hotkey-status"
+          />
+          <button type="button" data-testid="hotkey-reset">Reset</button>
+          <button type="button" data-testid="hotkey-disable">Turn off</button>
+        </p>
+
+        <p class="note" id="hotkey-status" data-testid="hotkey-status" role="status">
+          Click the field, then press the key you want.
+        </p>
+
+        <p class="note" data-testid="command-note">
+          <kbd>⌘</kbd><kbd>⇧</kbd><kbd>P</kbd> does the same, and it is Safari's: reassign it under
+          <em>Offers keyboard shortcuts</em> in Safari ▸ Settings ▸ Extensions ▸ PiPOSS. Safari
+          takes only shortcuts with a modifier, so the plain key above is ours.
+        </p>
+      </section>
+
+      <section aria-labelledby="behaviour-heading">
+        <h2 id="behaviour-heading">Behaviour</h2>
+
+        <p class="row">
+          <input type="checkbox" id="autopip" data-testid="toggle-autopip" />
+          <label for="autopip">Picture in Picture when you switch tabs</label>
+        </p>
+        <!--
+          "playing and not muted" rather than "playing with sound", matching the README
+          and `src/core/autopip.ts`'s literal `!paused && !muted`: a video with no audio
+          track is not `muted`, so "with sound" promised an exclusion the code does not
+          make (DECISIONS 118). The threshold stays "a few seconds" and is deliberately
+          not a number here — DECISIONS 116, which applies to product UI at least as
+          much as to prose.
+        -->
+        <p class="note">
+          A video that is playing and not muted floats out when you leave its tab. Muted and very
+          short videos are left alone, so a silent background loop cannot hijack the floating
+          window. Coming back does not put it away again.
+        </p>
+
+        <p class="row">
+          <input type="checkbox" id="youtube-button" data-testid="toggle-youtube-button" checked />
+          <label for="youtube-button">Show the button in YouTube's player controls</label>
+        </p>
+      </section>
+
+      <p class="error" data-testid="save-error" role="alert" hidden></p>
+    </main>
+  </body>
+</html>

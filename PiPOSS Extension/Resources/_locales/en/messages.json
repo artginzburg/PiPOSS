@@ -1,10 +1,14 @@
 {
-    "extension_name": {
-        "message": "PiPOSS",
-        "description": "The display name for the extension."
-    },
-    "extension_description": {
-        "message": "Brings Picture in Picture shortcut and custom button to any video.",
-        "description": "Description of what the extension does."
-    }
+  "extension_name": {
+    "message": "PiPOSS",
+    "description": "The display name for the extension."
+  },
+  "extension_description": {
+    "message": "Brings Picture in Picture to any video, with one keypress or one click.",
+    "description": "Description of what the extension does."
+  },
+  "command_toggle_pip": {
+    "message": "Toggle Picture in Picture",
+    "description": "Label for the registered keyboard command, shown where Safari lets the shortcut be reassigned."
+  }
 }

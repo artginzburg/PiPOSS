@@ -1,0 +1,151 @@
+<!--
+  YouTube's player controls, built faithfully from the capture in
+  docs/research/youtube-player-2026-07.md (live youtube.com/watch page, player
+  build `ytp-delhi-modern`, 2026-07-27).
+
+  What is verbatim from the capture:
+    * the three children of `.ytp-right-controls`, and the fact that
+      `.ytp-pip-button` is a *sibling* of the two grouping divs rather than
+      inside either of them;
+    * the `data-priority` values that were measured: subtitles 5, pip 8,
+      size 9, remote 10, fullscreen 12;
+    * the PiP button's own markup — `data-priority`, `data-tooltip-title`, the
+      inline `display: none` YouTube sets, and a plain 24x24 `currentColor`
+      glyph identical in kind to its neighbours;
+    * the `<style>` rules below, which are the CSS contract the shrunken-button
+      bug was fought against, and the measured live value of
+      `--yt-delhi-pill-top-height` (8px, not the 12px fallback).
+
+  What is deliberately not verbatim, so that nothing here reads as measured when
+  it was not:
+    * every `<path d="...">` is truncated — path data is irrelevant to placement
+      and visibility, and a full copy would be unreviewable noise;
+    * the player root's real class list is longer (width-mode and state classes);
+      only the two that matter to the captured CSS are kept;
+    * `data-priority` is NOT invented for the buttons whose value was not
+      captured (expand, autonav, settings, play). The capture says every button
+      carries one; it does not say which. Their absence here doubles as coverage
+      of the "sibling with no priority" path.
+    * the `--yt-delhi-pill-top-height` declaration is placed on the player
+      element because only its computed value was captured, not the selector
+      that declares it.
+
+  `.ytp-remote-button` (AirPlay) is present on purpose: the implementation this
+  fixture replaced chose its insertion point with an AirPlay branch that no test
+  ever covered (DECISIONS 31).
+-->
+<style>
+  /* Every control button's glyph, PiP included — the reason no compensation is
+     needed, and the reason writing one broke the button. */
+  .ytp-delhi-modern-icons .ytp-chrome-controls .ytp-button svg {
+    padding: var(--yt-delhi-pill-top-height, 12px) 12px;
+  }
+
+  .ytp-xsmall-width-mode.ytp-delhi-modern-icons
+    .ytp-right-controls
+    .ytp-button:not(.ytp-expand-right-bottom-section-button)
+    svg {
+    width: 18px;
+    height: 18px;
+    padding: 7px;
+  }
+
+  .ytp-big-mode.ytp-delhi-modern-icons .ytp-chrome-controls .ytp-button svg {
+    vertical-align: top;
+    padding: calc((var(--yt-delhi-big-mode-pill-height, 56px) - 24px) / 2);
+  }
+
+  .html5-video-player {
+    --yt-delhi-pill-top-height: 8px;
+  }
+</style>
+
+<div class="html5-video-player ytp-delhi-modern-icons" id="movie_player">
+  <div class="html5-video-container">
+    <!-- On a watch page the source is a blob URL, which is why sniffing
+         `video.src` for a youtube.com substring passed only by accident. -->
+    <video
+      class="video-stream html5-main-video"
+      src="blob:https://www.youtube.com/6f1e0c48-truncated"
+    ></video>
+  </div>
+  <div class="ytp-chrome-bottom">
+    <div class="ytp-chrome-controls">
+      <div class="ytp-left-controls">
+        <button class="ytp-play-button ytp-button" data-title-no-tooltip="Pause">
+          <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+            <path d="M9 19V5H6v14h3z…"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="ytp-right-controls">
+        <div class="ytp-right-controls-left">
+          <button
+            class="ytp-expand-right-bottom-section-button ytp-button"
+            data-tooltip-title="Expand"
+          >
+            <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+              <path d="M10 18h4v-2h-4v2z…"></path>
+            </svg>
+          </button>
+          <div class="ytp-autonav-toggle">
+            <div class="ytp-autonav-toggle-button-container"></div>
+          </div>
+          <button
+            class="ytp-subtitles-button ytp-button"
+            data-priority="5"
+            data-tooltip-title="Subtitles/closed captions (c)"
+          >
+            <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+              <path d="M5 6h14a2 2 0 012 2v8…"></path>
+            </svg>
+          </button>
+          <button class="ytp-settings-button ytp-button" data-tooltip-title="Settings">
+            <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+              <path d="M12 15.5A3.5 3.5 0 018.5 12…"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="ytp-right-controls-right">
+          <button
+            class="ytp-size-button ytp-button"
+            data-priority="9"
+            data-tooltip-title="Theater mode (t)"
+          >
+            <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+              <path d="M20 7H4v10h16V7z…"></path>
+            </svg>
+          </button>
+          <button
+            class="ytp-remote-button ytp-button"
+            data-priority="10"
+            data-tooltip-title="Play on TV"
+          >
+            <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+              <path d="M21 3H3v12h5v-2H5V5h14v8h-3v2h5V3z…"></path>
+            </svg>
+          </button>
+          <button
+            class="ytp-fullscreen-button ytp-button"
+            data-priority="12"
+            data-tooltip-title="Full screen (f)"
+          >
+            <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+              <path d="M10 19v-2H6v-4H4v6h6z…"></path>
+            </svg>
+          </button>
+        </div>
+        <button
+          class="ytp-pip-button ytp-button"
+          data-priority="8"
+          data-tooltip-title="Picture-in-picture"
+          style="display: none"
+        >
+          <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+            <path d="M19 11h-8v6h8v-6zm4 8V5a2 2 0 00-2-2H3…"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,9 @@
 node_modules/
 dist/*
 !dist/.gitkeep
+
+# Playwright's output for `pnpm run test:live`: the traces and screenshots it keeps
+# on failure, and the HTML report if anyone asks for one. RRR §10.1 item 8 wants a
+# clean tree, and a failed live run would otherwise leave a few megabytes in it.
+test-results/
+playwright-report/

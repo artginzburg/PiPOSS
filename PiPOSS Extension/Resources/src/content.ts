@@ -1,183 +1,87 @@
-interface HTMLVideoElement {
-  dataset: {
-    pipossCustomButtonEnabled?: `${boolean}`;
-    lastPresentationMode?: VideoPresentationMode;
-  };
+/**
+ * Composition root: selects the real platform implementation and wires it to the pure core
+ * modules. Everything WebKit-specific lives behind {@link PresentationController} (RRR §6).
+ */
+import { enableAutoPip } from './core/autopip';
+import { enableHotkey } from './core/hotkey';
+import { claimFrame } from './core/inject';
+import { onTogglePiPMessage } from './core/messages';
+import { observeSubtree } from './core/observe';
+import {
+  type PresentationController,
+  WebKitPresentationController,
+  togglePiP,
+} from './core/presentation';
+import { getVideos, pickVideo } from './core/video';
+import { mountYouTubeButton } from './sites/youtube';
+
+const controller: PresentationController = new WebKitPresentationController();
+
+// Exactly once per frame. The toolbar button injects this same file into tabs whose declared
+// copy never ran (RRR §4.1), so two copies can meet — and two copies register two `keyup` and
+// two message listeners, making every toggle fire twice and cancel itself out. See
+// `core/inject.ts`. Nothing here is ever disabled: in a page these bindings live exactly as
+// long as the document does.
+if (claimFrame()) {
+  listenForHotkey();
+  listenForBackgroundRequests();
+  listenForTabHide();
+  mountSiteButtons();
 }
 
-const PresentationMode = {
-  /**
-   * Picture in Picture
-   */
-  PIP: 'picture-in-picture',
-  /**
-   * On the page
-   */
-  INLINE: 'inline',
-} satisfies Record<string, VideoPresentationMode>;
-
-const hotkey = 'p';
-const hotkeyUppercase = hotkey.toUpperCase();
-
-enableHotkey();
-addCustomButtons();
-observeMutations();
-
-function enableHotkey(): void {
-  log('enabling hotkey');
-
-  document.addEventListener('keyup', handleKeyUp, {
-    passive: true,
+/** The hotkey of RRR §4.2. Which key and which modifiers are `core/hotkey.ts`'s business. */
+function listenForHotkey(): void {
+  enableHotkey({
+    onTrigger: () => {
+      togglePiPOnPage();
+    },
   });
-}
-
-function handleKeyUp(event: KeyboardEvent): void {
-  if (
-    !(
-      event.code === `Key${hotkeyUppercase}` ||
-      event.key === hotkey ||
-      event.key === hotkeyUppercase
-    )
-  )
-    return;
-
-  const hotkeyBlockingFocusedElements = ['INPUT', 'TEXTAREA'];
-  const activeElement = document.activeElement as HTMLElement | null;
-  if (
-    activeElement &&
-    (hotkeyBlockingFocusedElements.includes(activeElement.tagName) ||
-      activeElement.isContentEditable)
-  )
-    return;
-
-  log('should toggle PiP', event);
-
-  togglePiPOnPage();
 }
 
 /**
- * This does not select videos in `iframe`s (in Safari).
- * That's why we're running this content script for every frame on the page (via `"all_frames": true` in manifest.json)
+ * The other half of the toolbar button and of `⌘⇧P`: the background cannot touch a video, so it asks
+ * (RRR §4.1, §4.2). The handler is the very same {@link togglePiPOnPage} the hotkey calls — "exactly
+ * as the hotkey does" is a requirement, so there is deliberately no second code path to drift from it.
  */
-function getVideos(): NodeListOf<HTMLVideoElement> {
-  return document.querySelectorAll('video');
-}
-
-function togglePiPOnPage(videos: NodeListOf<HTMLVideoElement> = getVideos()): void {
-  log('videos', videos);
-
-  if (videos.length === 0) return; // No videos, stop.
-  if (videos.length === 1) {
-    // Only one video, execute and stop.
-    togglePiPOnVideo(videos[0]);
-    return;
-  }
-  // Multiple videos, only execute for the first one playing.
-  //? If there is multiple playing or none playing, maybe it should calculate the closest video and execute?
-  const playing = Array.from(videos).filter((video) => !video.paused);
-  if (playing.length === 0) return;
-  togglePiPOnVideo(playing[0]);
-}
-
-function togglePiPOnVideo(video: HTMLVideoElement): void {
-  log('toggling PiP for', video);
-
-  if (!video.webkitSupportsPresentationMode(PresentationMode.PIP)) return; // Current browser does not support Picture in Picture
-
-  const currentPresentationMode: VideoPresentationMode = video.webkitPresentationMode;
-
-  video.webkitSetPresentationMode(
-    currentPresentationMode === PresentationMode.PIP
-      ? (video.dataset.lastPresentationMode ?? PresentationMode.INLINE)
-      : PresentationMode.PIP,
-  );
-
-  video.dataset.lastPresentationMode = currentPresentationMode;
-}
-
-/** This is needed because going fullscreen in YouTube, for example, enters a different layout view, so there would be no custom buttons. */
-function observeMutations(): void {
-  new MutationObserver(addCustomButtons).observe(document, {
-    subtree: true,
-    childList: true,
+function listenForBackgroundRequests(): void {
+  onTogglePiPMessage(() => {
+    togglePiPOnPage();
   });
 }
 
-function addCustomButtons(): void {
-  const videos = getVideos();
-  for (const video of Array.from(videos)) {
-    if (!video.src.includes('www.youtube.com')) continue;
-    if (video.dataset.pipossCustomButtonEnabled) continue;
-
-    const videoContainer = video.parentElement?.parentElement;
-    const controlsContainer = videoContainer?.querySelector('.ytp-right-controls');
-
-    enableBuiltinYoutubePipButton(controlsContainer || null);
-    video.dataset.pipossCustomButtonEnabled = 'true';
-  }
+/**
+ * RRR §4.6, off unless the user turned it on; `core/autopip.ts` owns every judgement.
+ *
+ * Deliberately *not* routed through {@link togglePiPOnPage}, the hotkey's and the toolbar
+ * button's shared path: those two act because the user just asked, so they take a lone paused
+ * video and they *toggle* — both wrong for a trigger nobody pressed. The two paths share
+ * `togglePiP` instead, which is the part that must not be duplicated.
+ */
+function listenForTabHide(): void {
+  enableAutoPip({ controller });
 }
 
-function enableBuiltinYoutubePipButton(controlsContainer: Element | null): void {
-  if (!controlsContainer) return;
+function togglePiPOnPage(videos: NodeListOf<HTMLVideoElement> = getVideos()): void {
+  const video = pickVideo(videos);
+  if (!video) return;
 
-  log('Is youtube, gonna enable button');
-
-  // YouTube already has a PiP button, it's just hidden. Also, it has the same icon as the "Miniplayer (i)" button, though a little bit larger.
-  // So, we either need to hide the Miniplayer button and show PiP button instead, or keep both, but replace the PiP button icon with a custom one.
-  const pipButton = controlsContainer.querySelector<HTMLButtonElement>('.ytp-pip-button');
-  if (pipButton) {
-    pipButton.style.display = 'initial';
-    pipButton.ariaKeyShortcuts = 'p';
-
-    const pipButtonIcon = pipButton.querySelector('svg');
-    if (pipButtonIcon) {
-      // - Logic outline:
-
-      // The PIP button SVG is for some reason bigger than the SVGs of the other buttons.
-      // So, we're going to apply additional padding to it, on top of the default padding borrowed from the other SVGs.
-      // This additional padding is what's going to center the SVG.
-      // To calculate the amount of added padding, we're just using half of the size difference of the SVGs.
-
-      // Note: It appears YouTube is centering SVGs here with pixel-tuned padding instead of automatic layout features. Cool. Sounds good for runtime performance.
-
-      const defaults = {
-        '--yt-delhi-pill-top-height': '12px',
-      };
-      const originalSvgSize = 24;
-      const pipButtonSvgSize = 36;
-      const halfSvgSizeDiff = (pipButtonSvgSize - originalSvgSize) / 2;
-
-      // Original padding of the SVGs of the other buttons is: `var(--yt-delhi-pill-top-height,12px) 12px`
-      pipButtonIcon.style.padding = `calc(var(--yt-delhi-pill-top-height, ${defaults['--yt-delhi-pill-top-height']}) - ${halfSvgSizeDiff}px) ${12 - halfSvgSizeDiff}px`;
-      // Original SVGs have width and height specified explicitly in px, while this one has 100%. So for the padding to work, we're going to include it into the total size calculation via border-box.
-      pipButtonIcon.style.boxSizing = 'border-box';
-    }
-
-    // Move PiP button to right controls, before fullscreen (or AirPlay if present)
-    const rightControls = controlsContainer.querySelector('.ytp-right-controls-right');
-    if (rightControls) {
-      const airplayButton = rightControls.querySelector('.ytp-remote-button');
-      const fullscreenButton = rightControls.querySelector('.ytp-fullscreen-button');
-      const insertBefore = airplayButton ?? fullscreenButton;
-
-      if (insertBefore) {
-        rightControls.insertBefore(pipButton, insertBefore);
-      }
-    }
-  }
-
-  const miniplayerButton =
-    controlsContainer.querySelector<HTMLButtonElement>('.ytp-miniplayer-button');
-  if (!miniplayerButton) return;
-
-  // removing miniplayer button instead of hiding it. Otherwise, it's being made visible automatically by YouTube.
-  miniplayerButton.parentElement?.removeChild(miniplayerButton);
-  // miniplayerButton.style.display = 'none';
+  togglePiP(video, controller);
 }
 
-function log(...data: unknown[]): void {
-  const shouldLog = false;
-  if (shouldLog) {
-    console.log(data);
-  }
+/**
+ * The one site-specific surface (RRR §4.5). Everything about YouTube's DOM lives in
+ * `sites/youtube.ts`; this only says which document and which controller.
+ *
+ * The observer is installed only when that module has something to do, because a
+ * whole-document `childList` observer on every page on the web, feeding a consumer that does
+ * nothing, is RRR §5.3 at its worst (DECISIONS 134). `core/observe.ts` holds RRR §5.3's
+ * number: at most one run per animation frame.
+ */
+function mountSiteButtons(): void {
+  const youtube = mountYouTubeButton(document, controller);
+  if (!youtube.active) return;
+
+  observeSubtree(document, () => {
+    youtube.refresh();
+  });
 }

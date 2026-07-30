@@ -1,19 +1,27 @@
 {
   "name": "piposs-extension",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "PiPOSS Safari Web Extension",
   "type": "module",
+  "packageManager": "pnpm@11.17.0",
   "scripts": {
     "build": "pnpm run lint:ts && node esbuild.config.js",
     "watch": "node esbuild.config.js --watch",
-    "lint:ts": "tsc --project tsconfig.build.json --noEmit",
+    "test": "vitest run",
+    "test:live": "pnpm run build && playwright test",
+    "lint:ts": "tsc --project tsconfig.build.json --noEmit && tsc --project tsconfig.test.json --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "clean": "rm -rf dist && mkdir dist && touch dist/.gitkeep"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
     "@types/node": "^24.6.2",
     "esbuild": "^0.25.10",
+    "jsdom": "^29.1.1",
     "prettier": "^3.6.2",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.10"
   },
   "private": true
 }

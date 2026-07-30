@@ -1,1 +1,19 @@
+# PiPOSS.xcodeproj is GENERATED from project.yml by XcodeGen and is not committed
+# (RRR §8, T12).  `project.yml` is the only place a build setting may be edited —
+# a change made in Xcode's UI is written into this bundle and the next `make`
+# throws it away.  Every make target that needs the project regenerates it, so a
+# fresh clone still builds with `make app-build`; the one new prerequisite is
+# `brew install xcodegen` (docs/development.md).
+*.xcodeproj/
+
+# Kept from before XcodeGen: per-user Xcode state, which is never shared.  Still
+# listed separately rather than folded into the line above, because that is the
+# line that keeps it out if the project bundle is ever committed again.
 **/xcuserdata
+
+# SwiftPM, if a package is ever added (RRR §8).
+.build/
+
+# `scripts/release.sh` output: an archive, an export, a dmg. All regenerable, and
+# leaving an app bundle here would register a second copy with LaunchServices.
+build/

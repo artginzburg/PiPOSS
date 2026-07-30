@@ -1,0 +1,16 @@
+# What `pnpm run format:check` (RRR §9's prettier gate) must not look at.
+#
+# Prettier 3 reads BOTH `.gitignore` and `.prettierignore` by default, so
+# `node_modules/` and `dist/` are already excluded by the `.gitignore` beside this
+# file and are deliberately not repeated here.  What is left is the one committed
+# file prettier must be told to leave alone.
+#
+# pnpm writes `pnpm-lock.yaml` itself, in its own style: flow mappings on one line
+# (`engines: {node: ...}`), a blank line after `importers:` and after `packages:`.
+# Prettier disagrees with about two thirds of the file — 953 of 1429 lines, measured
+# — and would expand every `resolution:` into a four-line block.  Reformatting it
+# would be undone by the next `pnpm install` that touches a dependency, which means
+# the gate would go red on a change that has nothing to do with formatting, and
+# every future dependency bump would carry hundreds of lines of reflow noise.  A
+# generated file is formatted by its generator.
+pnpm-lock.yaml
