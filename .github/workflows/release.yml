@@ -46,6 +46,15 @@ jobs:
   release:
     name: Build, notarize, publish
     runs-on: macos-26
+
+    env:
+      # Corepack asks before downloading a pnpm it has not cached, and on a runner a prompt
+      # is a hang rather than a failure — the same reason the Makefile exports this.
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      # `brew install` otherwise refreshes the whole formula index first, which costs more
+      # than the formula being installed.
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+
     steps:
       - uses: actions/checkout@v7
 
@@ -114,10 +123,28 @@ jobs:
           echo "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/asc/AuthKey_$ASC_KEY_ID.p8"
           echo "ASC_PRIVATE_KEY_PATH=$RUNNER_TEMP/asc/AuthKey_$ASC_KEY_ID.p8" >> "$GITHUB_ENV"
 
-      - run: brew install xcodegen
+      # The extension is TypeScript built by pnpm, and `make check` runs it. The first
+      # release attempt failed here: this job had no Node and no pnpm, because ci.yml sets
+      # them up and I did not carry that over. Kept identical to ci.yml on purpose — two
+      # workflows that build the same product with different toolchains is a defect waiting
+      # for a release day.
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          # Cached on the runner image, and the major `@types/node` is pinned to.
+          node-version: '24'
 
-      # The same gates a developer runs, before spending Apple's time on a build
-      # that would not have passed them.
+      - name: Enable Corepack, which honours packageManager
+        run: corepack enable pnpm
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Show the toolchain make resolved
+        run: make doctor
+
+      # The same gates a developer runs, and before anything is signed or uploaded: a build
+      # that would not have passed them must not cost a notarization round trip.
       - run: make check
 
       - name: Build, notarize, staple
