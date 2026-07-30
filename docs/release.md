@@ -63,8 +63,14 @@ of which demands one), and nothing durable left on the Mac.
    GitHub generates them from the commits.
 
    `gh release create` creates the tag itself from the built commit, so a failed build never
-   leaves a tag pointing at an unreleased state. Pushing a `v*` tag by hand also works and
-   skips that step.
+   leaves a tag pointing at an unreleased state. Pushing a bare-version tag by hand also
+   works and skips that step.
+
+   **The tag is a bare version, no `v` prefix** — §2.1's convention, and load-bearing rather
+   than cosmetic: the cask's `url` interpolates `#{version}` straight into the download path,
+   so a `v` prefix makes the cask 404. The first 2.0.0 release went out tagged `v2.0.0` and
+   `brew audit --cask --online` caught it before the cask was pushed; the tag was renamed and
+   the workflow now derives and validates the bare form.
 
    Five secrets, all per-team and reusable from any other app of team R2294BC6J8:
    `APPLE_CERTIFICATES_P12`, `APPLE_CERTIFICATES_PASSWORD`, `ASC_KEY_ID`, `ASC_ISSUER_ID`,

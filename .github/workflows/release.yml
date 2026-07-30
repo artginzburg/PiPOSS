@@ -10,7 +10,7 @@
 # The one manual step left is the Homebrew cask, which lives in another repository. The
 # run summary prints the three lines to paste.
 #
-# Pushing a `v*` tag by hand also works and skips the tag creation.
+# Pushing a bare-version tag by hand also works and skips the tag creation.
 #
 # Secrets, all five documented in docs/release.md. They are **per team**, so the
 # values already used by any other app of team R2294BC6J8 work here unchanged:
@@ -33,7 +33,10 @@ on:
         required: false
         type: string
   push:
-    tags: ["v*"]
+    # Bare versions, no `v` — the convention of every release in this repo since 1.0,
+    # and load-bearing: the Homebrew cask's `url` interpolates `#{version}` straight
+    # into the download path, so a `v` prefix 404s the cask. Learned by doing it.
+    tags: ["[0-9]*"]
 
 permissions:
   contents: write
@@ -69,14 +72,15 @@ jobs:
         run: |
           version=$(grep -m1 -E '^\s+MARKETING_VERSION:' project.yml | awk '{print $2}')
           [ -n "$version" ] || { echo "::error::no MARKETING_VERSION in project.yml" >&2; exit 1; }
-          if [ "${GITHUB_REF}" != "${GITHUB_REF#refs/tags/v}" ]; then
+          if [ "${GITHUB_REF}" != "${GITHUB_REF#refs/tags/}" ]; then
             tag="${GITHUB_REF#refs/tags/}"
-            if [ "${tag#v}" != "$version" ]; then
+            if [ "$tag" != "$version" ]; then
               echo "::error::tag $tag does not match MARKETING_VERSION $version in project.yml" >&2
+              echo "::error::tags here are bare versions, with no 'v' prefix — the cask's url interpolates the version" >&2
               exit 1
             fi
           else
-            tag="v$version"
+            tag="$version"
             if gh release view "$tag" >/dev/null 2>&1; then
               echo "::error::$tag is already released. Bump MARKETING_VERSION and CURRENT_PROJECT_VERSION in project.yml." >&2
               exit 1
