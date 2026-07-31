@@ -26,6 +26,15 @@ export interface Settings {
   hotkey: string;
   /** Enter PiP when the tab stops being visible while a video plays. */
   autoPipOnTabHide: boolean;
+  /**
+   * Put a video that *this* extension floated on tab hide back where it came from when the tab
+   * becomes visible again. Meaningless on its own: nothing is ever remembered while
+   * {@link autoPipOnTabHide} is off, so this only ever undoes an entry we performed — which is
+   * why it defaults to `true` while its parent defaults to `false`. A default that can do
+   * nothing until the user switches something else on is a *shape*, not a behaviour: it says
+   * what auto-PiP means for anyone who turns it on without reading further.
+   */
+  autoRestoreOnTabReturn: boolean;
   /** Show the PiP button in the YouTube player controls. */
   youtubeButton: boolean;
 }
@@ -37,6 +46,7 @@ export const SETTINGS_KEY = 'settings';
 export const DEFAULTS: Readonly<Settings> = Object.freeze({
   hotkey: 'p',
   autoPipOnTabHide: false,
+  autoRestoreOnTabReturn: true,
   youtubeButton: true,
 });
 
@@ -227,6 +237,7 @@ function mergeOverDefaults(raw: BrowserStorageItems): Settings {
   return {
     hotkey: typeof raw.hotkey === 'string' ? raw.hotkey.toLowerCase() : DEFAULTS.hotkey,
     autoPipOnTabHide: asBoolean(raw.autoPipOnTabHide, DEFAULTS.autoPipOnTabHide),
+    autoRestoreOnTabReturn: asBoolean(raw.autoRestoreOnTabReturn, DEFAULTS.autoRestoreOnTabReturn),
     youtubeButton: asBoolean(raw.youtubeButton, DEFAULTS.youtubeButton),
   };
 }

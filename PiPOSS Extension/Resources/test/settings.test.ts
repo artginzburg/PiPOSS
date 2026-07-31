@@ -26,7 +26,12 @@ afterEach(() => {
 
 describe('DEFAULTS', () => {
   it('is exactly the table in RRR §3', () => {
-    expect(DEFAULTS).toEqual({ hotkey: 'p', autoPipOnTabHide: false, youtubeButton: true });
+    expect(DEFAULTS).toEqual({
+      hotkey: 'p',
+      autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
+      youtubeButton: true,
+    });
   });
 
   it('is frozen, so no consumer can mutate the fallback everyone else reads', () => {
@@ -64,15 +69,22 @@ describe('loadSettings', () => {
     await expect(loadSettings()).resolves.toEqual({
       hotkey: 'k',
       autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
     });
   });
 
   it('returns a fully written object unchanged', async () => {
-    withStored({ hotkey: 'q', autoPipOnTabHide: true, youtubeButton: false });
+    withStored({
+      hotkey: 'q',
+      autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
+      youtubeButton: false,
+    });
     await expect(loadSettings()).resolves.toEqual({
       hotkey: 'q',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: false,
     });
   });
@@ -80,6 +92,17 @@ describe('loadSettings', () => {
   it('keeps an empty hotkey, which is how the user disables it (RRR §3)', async () => {
     withStored({ hotkey: '' });
     await expect(loadSettings()).resolves.toMatchObject({ hotkey: '' });
+  });
+
+  it('keeps a stored autoRestoreOnTabReturn, and repairs a non-boolean to RRR §3’s true', async () => {
+    withStored({ autoRestoreOnTabReturn: false });
+    await expect(loadSettings()).resolves.toMatchObject({ autoRestoreOnTabReturn: false });
+
+    // Not merely tidiness: a stored string is not an answer, and the field decides whether the
+    // user's floating window is taken away for them. Repaired to the default, in the one
+    // direction RRR §3 names.
+    withStored({ autoRestoreOnTabReturn: 'no' });
+    await expect(loadSettings()).resolves.toMatchObject({ autoRestoreOnTabReturn: true });
   });
 
   it('keeps a false youtubeButton rather than falling back to the true default', async () => {
@@ -103,6 +126,7 @@ describe('loadSettings', () => {
     await expect(loadSettings()).resolves.toEqual({
       hotkey: 'k',
       autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
     });
   });
@@ -124,10 +148,16 @@ describe('loadSettings', () => {
     });
 
     it('keeps the healthy siblings of a corrupt field', async () => {
-      withStored({ hotkey: null, autoPipOnTabHide: true, youtubeButton: false });
+      withStored({
+        hotkey: null,
+        autoPipOnTabHide: true,
+        autoRestoreOnTabReturn: true,
+        youtubeButton: false,
+      });
       await expect(loadSettings()).resolves.toEqual({
         hotkey: 'p',
         autoPipOnTabHide: true,
+        autoRestoreOnTabReturn: true,
         youtubeButton: false,
       });
     });
@@ -196,7 +226,14 @@ describe('saveSettings', () => {
     await saveSettings({ hotkey: 'k' });
 
     expect(fake.storage.local.setCalls).toEqual([
-      { [SETTINGS_KEY]: { hotkey: 'k', autoPipOnTabHide: false, youtubeButton: true } },
+      {
+        [SETTINGS_KEY]: {
+          hotkey: 'k',
+          autoPipOnTabHide: false,
+          autoRestoreOnTabReturn: true,
+          youtubeButton: true,
+        },
+      },
     ]);
   });
 
@@ -208,6 +245,7 @@ describe('saveSettings', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'k',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: false,
     });
   });
@@ -217,6 +255,7 @@ describe('saveSettings', () => {
     await expect(saveSettings({ hotkey: 'k' })).resolves.toEqual({
       hotkey: 'k',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
     });
   });
@@ -225,6 +264,7 @@ describe('saveSettings', () => {
     const fake = withStored({
       hotkey: 'k',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
       futureFeature: 'on',
       futureObject: { nested: [1, 2, 3] },
@@ -235,6 +275,7 @@ describe('saveSettings', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'm',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
       futureFeature: 'on',
       futureObject: { nested: [1, 2, 3] },
@@ -251,6 +292,7 @@ describe('saveSettings', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'k',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: false,
       futureFeature: 'on',
     });
@@ -270,6 +312,7 @@ describe('saveSettings', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'p',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
     });
   });
@@ -280,12 +323,18 @@ describe('saveSettings', () => {
     await expect(saveSettings({ hotkey: 'm' })).resolves.toEqual({
       hotkey: 'm',
       autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
     });
 
     const stored = fake.storage.local.snapshot()[SETTINGS_KEY];
     expect(Array.isArray(stored)).toBe(false);
-    expect(stored).toEqual({ hotkey: 'm', autoPipOnTabHide: false, youtubeButton: true });
+    expect(stored).toEqual({
+      hotkey: 'm',
+      autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
+      youtubeButton: true,
+    });
   });
 
   it('treats an explicit undefined in the partial as "leave it alone"', async () => {
@@ -295,6 +344,7 @@ describe('saveSettings', () => {
 
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toMatchObject({
       hotkey: 'k',
+      autoRestoreOnTabReturn: true,
       youtubeButton: false,
     });
   });
@@ -327,6 +377,7 @@ describe('saveSettings', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'm',
       autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
       youtubeButton: false,
     });
   });
@@ -348,8 +399,18 @@ describe('saveSettings', () => {
       saveSettings({ youtubeButton: false }),
     ]);
 
-    expect(results[0]).toEqual({ hotkey: 'm', autoPipOnTabHide: false, youtubeButton: true });
-    expect(results[1]).toEqual({ hotkey: 'm', autoPipOnTabHide: false, youtubeButton: false });
+    expect(results[0]).toEqual({
+      hotkey: 'm',
+      autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
+      youtubeButton: true,
+    });
+    expect(results[1]).toEqual({
+      hotkey: 'm',
+      autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
+      youtubeButton: false,
+    });
   });
 
   it('preserves unknown fields when three writes overlap', async () => {
@@ -364,6 +425,7 @@ describe('saveSettings', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'm',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: false,
       futureFeature: 'on',
     });
@@ -419,6 +481,7 @@ describe('saveSettings', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'q',
       autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
       futureFeature: 'on',
     });
@@ -484,7 +547,9 @@ describe('onSettingsChanged', () => {
 
     await saveSettings({ hotkey: 'k' });
 
-    expect(seen).toEqual([{ hotkey: 'k', autoPipOnTabHide: true, youtubeButton: true }]);
+    expect(seen).toEqual([
+      { hotkey: 'k', autoPipOnTabHide: true, autoRestoreOnTabReturn: true, youtubeButton: true },
+    ]);
   });
 
   it('merges a partially written new value over the defaults', () => {
@@ -494,7 +559,9 @@ describe('onSettingsChanged', () => {
 
     fake.storage.onChanged.emit({ [SETTINGS_KEY]: { newValue: { hotkey: 'k' } } });
 
-    expect(seen).toEqual([{ hotkey: 'k', autoPipOnTabHide: false, youtubeButton: true }]);
+    expect(seen).toEqual([
+      { hotkey: 'k', autoPipOnTabHide: false, autoRestoreOnTabReturn: true, youtubeButton: true },
+    ]);
   });
 
   it('reports the defaults when the settings key is removed', async () => {
@@ -536,7 +603,9 @@ describe('onSettingsChanged', () => {
 
     fake.storage.onChanged.emit({ [SETTINGS_KEY]: { newValue: { hotkey: 'k' } } }, 'sync');
 
-    expect(seen).toEqual([{ hotkey: 'k', autoPipOnTabHide: false, youtubeButton: true }]);
+    expect(seen).toEqual([
+      { hotkey: 'k', autoPipOnTabHide: false, autoRestoreOnTabReturn: true, youtubeButton: true },
+    ]);
   });
 
   it('propagates every subsequent change, so no reload is needed (RRR §3)', async () => {
@@ -647,6 +716,7 @@ describe('the shared browser fake', () => {
     expect(fake.storage.local.snapshot()[SETTINGS_KEY]).toEqual({
       hotkey: 'm',
       autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
       youtubeButton: true,
       futureObject: { nested: [1, 2, 3] },
     });

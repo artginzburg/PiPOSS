@@ -68,6 +68,13 @@ reopen it. Besides the hotkey it has:
   videos and clips of a few seconds are deliberately left alone, so that a page's
   silent background loop cannot hijack the floating window. It keeps floating when
   you come back, in case that is where you wanted it.
+- **Put it back when you return to the tab** — on by default, and greyed out until
+  you switch the one above on, because it cannot do anything on its own. It undoes
+  exactly what that switch did: a window PiPOSS floated out by itself, and only if
+  you left it floating the whole time. Open or reopen the floating window yourself
+  and it stays — that one is yours. The video goes back to the presentation it came
+  from, though a player that was fullscreen usually comes back inline: only Safari
+  can put a page back into fullscreen, and only right after you press something.
 - **The YouTube button** — on by default.
 
 ## Development

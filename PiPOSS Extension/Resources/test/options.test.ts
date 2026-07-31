@@ -97,6 +97,7 @@ const hotkeyStatus = (): HTMLElement => control<HTMLElement>('hotkey-status');
 const hotkeyReset = (): HTMLButtonElement => control<HTMLButtonElement>('hotkey-reset');
 const hotkeyDisable = (): HTMLButtonElement => control<HTMLButtonElement>('hotkey-disable');
 const autoPipToggle = (): HTMLInputElement => control<HTMLInputElement>('toggle-autopip');
+const autoRestoreToggle = (): HTMLInputElement => control<HTMLInputElement>('toggle-auto-restore');
 const youtubeToggle = (): HTMLInputElement => control<HTMLInputElement>('toggle-youtube-button');
 const saveError = (): HTMLElement => control<HTMLElement>('save-error');
 
@@ -188,6 +189,7 @@ describe('options.html — the file Safari actually loads', () => {
       'hotkey-disable',
       'command-note',
       'toggle-autopip',
+      'toggle-auto-restore',
       'toggle-youtube-button',
       'save-error',
     ]) {
@@ -217,7 +219,13 @@ describe('options.html — the file Safari actually loads', () => {
 
     expect(hotkeyField().value.toLowerCase()).toBe(DEFAULTS.hotkey);
     expect(autoPipToggle().checked).toBe(DEFAULTS.autoPipOnTabHide);
+    expect(autoRestoreToggle().checked).toBe(DEFAULTS.autoRestoreOnTabReturn);
     expect(youtubeToggle().checked).toBe(DEFAULTS.youtubeButton);
+
+    // The return toggle's default is a *pair*: on, and greyed out because its parent is off.
+    // Written into the markup as well as into `render`, because this is the state of the page
+    // for the moment before the bundle runs — and the state it keeps if the bundle is missing.
+    expect(autoRestoreToggle().disabled).toBe(true);
 
     // And nothing above wrote anything: no fake is installed, so a write would throw.
     await settle(1);
@@ -746,9 +754,14 @@ describe('Hotkey — off, and back on', () => {
 
 describe('Toggles', () => {
   it('reflects what is stored rather than the markup’s defaults', async () => {
-    await openStored({ autoPipOnTabHide: true, youtubeButton: false });
+    await openStored({
+      autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: false,
+      youtubeButton: false,
+    });
 
     expect(autoPipToggle().checked).toBe(true);
+    expect(autoRestoreToggle().checked).toBe(false);
     expect(youtubeToggle().checked).toBe(false);
   });
 
@@ -769,6 +782,72 @@ describe('Toggles', () => {
     await expect(stored()).resolves.toMatchObject({ autoPipOnTabHide: false });
   });
 
+  it('round-trips autoRestoreOnTabReturn, which is on by default', async () => {
+    // Stored with the parent on, because that is the only state in which this control is
+    // enabled — see the two tests below.
+    await openStored({ autoPipOnTabHide: true });
+    expect(autoRestoreToggle().checked).toBe(true);
+
+    autoRestoreToggle().checked = false;
+    autoRestoreToggle().dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+
+    await expect(stored()).resolves.toMatchObject({ autoRestoreOnTabReturn: false });
+
+    autoRestoreToggle().checked = true;
+    autoRestoreToggle().dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+
+    await expect(stored()).resolves.toMatchObject({ autoRestoreOnTabReturn: true });
+  });
+
+  it('enables and disables the return toggle as its parent is switched', async () => {
+    await openPage();
+
+    autoPipToggle().checked = true;
+    autoPipToggle().dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+
+    expect(autoRestoreToggle().disabled).toBe(false);
+
+    autoPipToggle().checked = false;
+    autoPipToggle().dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+
+    expect(autoRestoreToggle().disabled).toBe(true);
+    // And the stored value survived the round trip untouched.
+    await expect(stored()).resolves.toMatchObject({ autoRestoreOnTabReturn: true });
+  });
+
+  it('follows another context’s change of the parent, not only its own click', async () => {
+    const { fake } = await openStored({ autoPipOnTabHide: true });
+    expect(autoRestoreToggle().disabled).toBe(false);
+
+    fake.storage.onChanged.emit({
+      [SETTINGS_KEY]: { newValue: { autoPipOnTabHide: false } },
+    });
+    await settle();
+
+    expect(autoRestoreToggle().disabled).toBe(true);
+  });
+
+  it('leaves autoRestoreOnTabReturn stored when its parent toggle goes off', async () => {
+    // The two are one feature to the user and two answers here: clearing this behind their
+    // back would lose it every time they turned auto-PiP off for an afternoon. Nothing is ever
+    // remembered while the parent is off, so the stored `true` is inert until it means
+    // something again — and the control is greyed out rather than rewritten.
+    await openStored({ autoPipOnTabHide: true, autoRestoreOnTabReturn: true });
+
+    autoPipToggle().checked = false;
+    autoPipToggle().dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+
+    await expect(stored()).resolves.toMatchObject({
+      autoPipOnTabHide: false,
+      autoRestoreOnTabReturn: true,
+    });
+  });
+
   it('round-trips youtubeButton, which is on by default', async () => {
     await openPage();
     expect(youtubeToggle().checked).toBe(true);
@@ -786,7 +865,7 @@ describe('Toggles', () => {
     await expect(stored()).resolves.toMatchObject({ youtubeButton: true });
   });
 
-  it('writes only the field that changed, so the other two are never overwritten', async () => {
+  it('writes only the field that changed, so the others are never overwritten', async () => {
     const { fake } = await openStored({ hotkey: 'q', youtubeButton: false });
 
     autoPipToggle().checked = true;
@@ -796,6 +875,7 @@ describe('Toggles', () => {
     await expect(stored()).resolves.toEqual({
       hotkey: 'q',
       autoPipOnTabHide: true,
+      autoRestoreOnTabReturn: true,
       youtubeButton: false,
     });
     expect(fake.storage.local.setCalls).toHaveLength(1);
