@@ -155,7 +155,7 @@ targets:
         # will not register the extension inside it.
         CODE_SIGN_IDENTITY: Apple Development
         CODE_SIGN_STYLE: Automatic
-        CURRENT_PROJECT_VERSION: 5
+        CURRENT_PROJECT_VERSION: 6
         DEAD_CODE_STRIPPING: YES
         # ------------------------------------------------------------------
         # The entitlement set, and it is decided *here* (T18, docs/app-store.md).
@@ -216,7 +216,7 @@ targets:
           - $(inherited)
           - "@executable_path/../Frameworks"
         MACOSX_DEPLOYMENT_TARGET: 11.0
-        MARKETING_VERSION: 2.0.0
+        MARKETING_VERSION: 2.0.1
         OTHER_LDFLAGS:
           # SafariServices only.  `-framework WebKit` went with the WKWebView the old
           # AppKit app used; nothing imports WebKit now, and `otool -L` is the check.
@@ -339,7 +339,7 @@ targets:
         # register.
         CODE_SIGN_IDENTITY: Apple Development
         CODE_SIGN_STYLE: Automatic
-        CURRENT_PROJECT_VERSION: 5
+        CURRENT_PROJECT_VERSION: 6
         DEAD_CODE_STRIPPING: YES
         # The appex is sandboxed in its own right, and that is not optional: it is signed
         # separately, the Mac App Store requires the sandbox on every bundle it accepts,
@@ -358,7 +358,7 @@ targets:
           - "@executable_path/../Frameworks"
           - "@executable_path/../../../../Frameworks"
         MACOSX_DEPLOYMENT_TARGET: 11.0
-        MARKETING_VERSION: 2.0.0
+        MARKETING_VERSION: 2.0.1
         OTHER_LDFLAGS:
           - -framework
           - SafariServices
