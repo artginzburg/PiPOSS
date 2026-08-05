@@ -17,3 +17,5 @@
 # `scripts/release.sh` output: an archive, an export, a dmg. All regenerable, and
 # leaving an app bundle here would register a second copy with LaunchServices.
 build/
+
+.DS_Store
