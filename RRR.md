@@ -67,6 +67,7 @@ One object in `browser.storage.local` under key `settings`:
 |---|---|---|---|
 | `hotkey` | `string` | `"p"` | Single printable key that toggles PiP. Stored lowercase. Empty string disables the hotkey. |
 | `autoPipOnTabHide` | `boolean` | `false` | Enter PiP automatically when the tab stops being visible while a video plays. |
+| `autoRestoreOnTabReturn` | `boolean` | `true` | Leave PiP again when the tab becomes visible, for a video this extension floated and that has stayed floating. Inert while `autoPipOnTabHide` is off, which is what lets it default to on. |
 | `youtubeButton` | `boolean` | `true` | Show the PiP button in the YouTube player controls. |
 
 Hard rules that bite late:
@@ -158,7 +159,9 @@ limit, not a bug — do not spend tasks trying to defeat it.
 2. **Hotkey** — a single-key capture field, default `P`, with a "reset to
    default" affordance and a note pointing to Safari's own settings for the
    `⌘⇧P` command.
-3. **Toggles** — `autoPipOnTabHide` (off by default), `youtubeButton` (on).
+3. **Toggles** — `autoPipOnTabHide` (off by default), `autoRestoreOnTabReturn` (on, and
+   **disabled** in the UI while `autoPipOnTabHide` is off — it can do nothing then, and a live
+   control that does nothing is what §4.3 refuses elsewhere), `youtubeButton` (on).
 
 Native look: system font, `color-scheme: light dark`, no third-party CSS.
 Every control needs a stable `data-testid`.
@@ -198,11 +201,26 @@ player with `closest('.html5-video-player')`, not `parentElement.parentElement`.
 ### 4.6 Auto-PiP on tab hide
 
 When `autoPipOnTabHide` is on and `document.visibilityState` becomes `hidden`
-while a video is playing, put that video into PiP. Do not restore
-automatically on return — the user may have deliberately kept it floating.
-Never fire for muted or paused videos, and never for videos shorter than 5
-seconds (those are decorative loops, and flinging them into PiP is the failure
-mode that would make people uninstall). Off by default.
+while a video is playing, put that video into PiP. Never fire for muted or paused
+videos, and never for videos shorter than 5 seconds (those are decorative loops,
+and flinging them into PiP is the failure mode that would make people uninstall).
+Off by default.
+
+Restoring on return is the separate `autoRestoreOnTabReturn`. It is **on by
+default and its parent is not**, which is only coherent because nothing is ever
+remembered while `autoPipOnTabHide` is off: the field says what auto-PiP *means*
+for whoever switches it on without reading further, and can do nothing until they
+do. The objection to restoring unconditionally still stands — the user may have
+deliberately kept the window floating — and is answered by the two conditions
+below rather than by the default. Two conditions keep the setting inside its
+promise, and neither may be dropped — the video must be one **this extension
+floated on the last tab hide**, and it must have been in PiP **continuously
+since**, judged by the browser's own presentation reports rather than by the mode
+read on return. A window the user opened, or closed and reopened by hand, is
+theirs. Restoring means the same `togglePiP` a hotkey press performs, so the
+video returns to the presentation it came from; the document-fullscreen half of
+that will usually be refused for want of a user gesture, and that is accepted —
+inline is the honest fallback, and the settings page says so.
 
 ### 4.7 Container app
 

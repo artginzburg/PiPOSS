@@ -108,7 +108,38 @@
         <p class="note">
           A video that is playing and not muted floats out when you leave its tab. Muted and very
           short videos are left alone, so a silent background loop cannot hijack the floating
-          window. Coming back does not put it away again.
+          window. Coming back does not put it away again, unless you ask for it below.
+        </p>
+
+        <!--
+          `checked disabled` is the RRR §3 default *pair*, and the markup has to show both: the
+          switch is on, and the switch above it is off, so it can do nothing yet. Rendering it
+          enabled for the moment before `dist/options.js` runs would offer a control that has no
+          effect — the one thing the access section further up refuses to do.
+        -->
+        <p class="row">
+          <input
+            type="checkbox"
+            id="auto-restore"
+            data-testid="toggle-auto-restore"
+            checked
+            disabled
+          />
+          <label for="auto-restore">Put it back when you return to the tab</label>
+        </p>
+        <!--
+          "floated out by itself" is the whole promise: only a window this extension opened on a
+          tab switch is closed again, and only if it has stayed open since. A floating window you
+          opened — or closed and reopened — is yours, which is the objection RRR §4.6 raises
+          against restoring on return, and what lets this one default to on.
+          The fullscreen sentence is not a hedge: `requestFullscreen` needs a keypress or a click,
+          and returning to a tab is neither, so Safari usually refuses it.
+        -->
+        <p class="note">
+          Only for a window that floated out by itself on the way out, and that you left floating.
+          It goes back to where it was — though a player that was fullscreen usually comes back
+          inline, because only Safari can put a page back into fullscreen and only right after you
+          press something.
         </p>
 
         <p class="row">

@@ -2254,6 +2254,66 @@ BF19 — "fullscreen" is not a presentation mode of the video, and BF02 assumed 
      member's real implementation plus the record's two fields; the budget is RRR §5.2's and
      this stays comfortably inside it.
 
+## 2026-07-31 · T22 The return half of auto-PiP
+
+318. **Restoring on return became a setting rather than a behaviour, and RRR §4.6 was amended
+     rather than contradicted.** §4.6 said "do not restore automatically on return — the user
+     may have deliberately kept it floating", and that objection is still correct. What makes
+     an option legitimate is not that the owner asked for it but that the objection can be
+     answered inside the option's own definition: the feature acts only on a window *we*
+     opened and that has never been touched since. A setting that could close a window the
+     user chose to keep would have been the same mistake with a checkbox in front of it.
+319. **The claim is a video plus a live mode subscription, not a video plus a mode read on
+     return.** Reading `getMode` on return refuses a video that has left PiP, but not one the
+     user took out and put back by hand while the tab was hidden — same mode, opposite intent.
+     `PresentationController.onModeChange`, BF02's fourth member, is what tells them apart, so
+     the claim expires the moment the browser reports anything other than PiP. Mutation:
+     deleting the subscription and keeping the live-mode check leaves 50 of 52 auto-PiP tests
+     green, and the one it breaks is exactly the out-and-back-in case. The seventh time in
+     this project that mutation was the only instrument that could see a difference.
+320. **Exit is `togglePiP`, the same call the hotkey makes** — not `setMode(INLINE)`. The
+     restore record already holds where the video came from, including BF19's document
+     fullscreen, so "put it back" is one existing function and not a second answer that can
+     drift from it. Symmetric with DECISIONS 174, which routed the *entry* the same way.
+321. **The fullscreen half will usually be refused, and that is accepted rather than worked
+     around.** `requestFullscreen` needs a user gesture; returning to a tab is not one, so
+     BF19's request goes out and is dropped — `enterFullscreen` already swallows the
+     rejection. The alternative was to suppress the request, which buys nothing: inline is
+     where the user lands either way, and a Safari that ever allows it would then be excluded
+     by our own code. The options page and the README say plainly that a fullscreen player
+     usually comes back inline; a promise the platform will not keep is worse than a caveat.
+322. **The setting is read at the moment of return, not latched when the tab hid.** Turning
+     this on *is* a tab switch: the user leaves the video for the options page, which floats
+     the video, then comes back. Latching would answer their very first try with nothing
+     happening. The claim is dropped on return either way, so a return with the setting off
+     cannot leave a video that some later, unrelated return would restore.
+323. **`autoRestoreOnTabReturn` is stored independently of `autoPipOnTabHide`, and is not
+     cleared when the parent goes off.** They are one feature to the user and two answers
+     here; clearing the child behind their back would lose it every time the parent was
+     turned off for an afternoon. Nothing is ever remembered while the parent is off, so a
+     stored `true` is inert until it means something again.
+323a. **Which is exactly why the child defaults to `true` and the parent to `false`.** A
+     default that cannot act until the user switches something else on is a *shape* rather
+     than a behaviour: it says what auto-PiP means for anyone who turns it on without reading
+     further, and RRR §4.6's caution — the thing that keeps the parent off — is about floating
+     a window nobody asked for, not about putting our own back. The rule the two defaults have
+     to satisfy together is that no window is ever moved before the user has asked for
+     anything, and it holds: the return half is consulted only for a video this binding
+     floated, and floating one requires the parent.
+323b. **The control is `disabled` while its parent is off, not hidden and not unchecked.**
+     Unchecked would be a lie about what is stored; hidden would make the feature undiscoverable
+     at the only moment somebody is reading that section. Greyed out says both true things at
+     once — this is your answer, and it is waiting on the switch above. It is written into
+     `options.html` as well as into `render`, because the markup is the page for the moment
+     before the bundle runs and it must not offer a control that has no effect. That pairing
+     is the same principle as RRR §4.3's access read-out, which is a marker and not a button
+     for exactly this reason.
+324. **`visibilityState === 'visible'` and `=== 'hidden'` as named states, not `!== 'hidden'`.**
+     A prerendered document is neither of the two moments this feature is about, and the
+     existing hide half already made that distinction (RRR §4.6 names `'hidden'` for the same
+     reason). The return half inherits it rather than treating "not hidden" as "back".
+325. Content bundle 8050 → 8259 B, 67% of the 12 KB budget (RRR §5.2). 491 tests, up from 471.
+
 Predictions for acceptance, with their treatment ready:
 
 8. **Prediction for T03.** Safari's MV3 `service_worker` background is supported

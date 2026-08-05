@@ -92,6 +92,11 @@ the app, which is the only reason they were found at all.
 
 ## Open
 
+- [x] **T22. `autoRestoreOnTabReturn`** — the return half of auto-PiP, off by default: a video
+      *this extension* floated on tab hide, and that has been in PiP continuously since, leaves
+      PiP again when the tab comes back. RRR §4.6 previously ruled restoring out; the owner
+      asked for it as an option, which answers the objection it was ruled out for. *Owner-asked.*
+
 - [x] **T21. The methodology metrics file** — `metrics/artginzburg-piposs.json`, submitted as
   [autodev-methodology#1](https://github.com/vvginzburg/autodev-methodology/pull/1). Everything
   else T21 asked for was already done: RRR §10.1 is confirmed by `make check`, and REPORT.md

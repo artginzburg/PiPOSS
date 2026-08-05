@@ -29,7 +29,7 @@ import {
   lastPresentationModeOf,
   togglePiP,
 } from '../src/core/presentation';
-import { SETTINGS_KEY, saveSettings } from '../src/core/settings';
+import { DEFAULTS, SETTINGS_KEY, saveSettings } from '../src/core/settings';
 import { installFakeBrowser, uninstallFakeBrowser } from './helpers/fake-browser';
 import { macrotask } from './helpers/timing';
 import {
@@ -229,23 +229,24 @@ describe('enableAutoPip', () => {
     expect(controller.setModeCalls).toEqual([]);
   });
 
-  it('does not restore when the user comes back (RRR §4.6)', async () => {
+  it('does not restore when the user comes back, with autoRestoreOnTabReturn off (RRR §4.6)', async () => {
     const video = appendVideo();
-    await start();
+    await start({ autoPipOnTabHide: true, autoRestoreOnTabReturn: false });
 
     setVisibility('hidden');
     expect(controller.modeOf(video)).toBe(PresentationMode.PIP);
 
     setVisibility('visible');
 
-    // The user may have kept it floating on purpose. One entry, no exit.
+    // The default, and the answer for anyone who has not asked otherwise: the user may have
+    // kept it floating on purpose. One entry, no exit.
     expect(controller.setModeCalls).toEqual([{ video, mode: PresentationMode.PIP }]);
     expect(controller.modeOf(video)).toBe(PresentationMode.PIP);
   });
 
   it('does not fire again for a video it already floated', async () => {
     const video = appendVideo();
-    await start();
+    await start({ autoPipOnTabHide: true, autoRestoreOnTabReturn: false });
 
     setVisibility('hidden');
     setVisibility('visible');
@@ -496,6 +497,248 @@ describe('enableAutoPip', () => {
 });
 
 /**
+ * RRR §4.6's opt-in return half: `autoRestoreOnTabReturn` puts back what auto-PiP took, and
+ * nothing else.
+ *
+ * The shape of this file follows from what the setting is allowed to claim. "Nothing else" is
+ * two conditions, and each has its own test here because either one alone is a feature that
+ * closes a floating window the user chose to keep:
+ *
+ * - the video must be one **this binding floated** — never one already in PiP when the tab hid;
+ * - it must have been in PiP **continuously since**, which is why a claim expires on the
+ *   browser's own mode report rather than on a mode read at return time. The
+ *   out-and-back-in-by-hand test below is red against a live-mode check and green against the
+ *   subscription: both end with the video in PiP, and only the report tells them apart.
+ */
+describe('coming back to the tab', () => {
+  /** Both halves on. The parent alone is the default `start()`. */
+  const bothOn = { autoPipOnTabHide: true, autoRestoreOnTabReturn: true };
+
+  it('takes its own floating video back out of PiP', async () => {
+    const video = appendVideo();
+    await start(bothOn);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(controller.setModeCalls).toEqual([
+      { video, mode: PresentationMode.PIP },
+      { video, mode: PresentationMode.INLINE },
+    ]);
+  });
+
+  it('restores the presentation the video came from, not merely inline', async () => {
+    const video = appendVideo();
+    controller.setInitialMode(video, 'fullscreen');
+    await start(bothOn);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    // Through `togglePiP`, whose record holds where the video was — the same answer the hotkey
+    // would give. A `setMode(INLINE)` written here would pass every other test in this block.
+    expect(controller.modeOf(video)).toBe('fullscreen');
+  });
+
+  it('asks for the document fullscreen the user floated out of (BF19)', async () => {
+    const video = appendVideo();
+    const player = document.createElement('div');
+    document.body.appendChild(player);
+    player.appendChild(video);
+    await start(bothOn);
+
+    controller.externalFullscreenChange(player);
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    // The request is made; whether Safari grants it is another matter, and the reason the
+    // options page says a fullscreen player usually comes back inline — `requestFullscreen`
+    // wants a user gesture, and returning to a tab is not one.
+    expect(controller.fullscreenRequests).toEqual([player]);
+  });
+
+  it('leaves alone a video that was already floating before the tab hid', async () => {
+    const video = appendVideo();
+    controller.setInitialMode(video, PresentationMode.PIP);
+    await start(bothOn);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    // Nothing was floated by us, so there is nothing to put back. This is the user's own
+    // floating window, and the objection RRR §4.6 raises against the whole feature.
+    expect(controller.setModeCalls).toEqual([]);
+  });
+
+  it('leaves alone a video the user took out of PiP and floated again by hand', async () => {
+    const video = appendVideo();
+    await start(bothOn);
+
+    setVisibility('hidden');
+
+    // The system PiP window's close button, then the player's own PiP control — both reach us
+    // only as the browser's report. The video ends where it started, in PiP, but this one is
+    // the user's choice and not ours to undo.
+    controller.externalModeChange(video, PresentationMode.INLINE);
+    controller.externalModeChange(video, PresentationMode.PIP);
+
+    setVisibility('visible');
+
+    expect(controller.setModeCalls).toEqual([{ video, mode: PresentationMode.PIP }]);
+    expect(controller.modeOf(video)).toBe(PresentationMode.PIP);
+  });
+
+  it('does nothing when the video is no longer in PiP at all', async () => {
+    const video = appendVideo();
+    await start(bothOn);
+
+    setVisibility('hidden');
+    controller.externalModeChange(video, PresentationMode.INLINE);
+    setVisibility('visible');
+
+    expect(controller.setModeCalls).toEqual([{ video, mode: PresentationMode.PIP }]);
+  });
+
+  it('does nothing when the player has been rebuilt out of the document', async () => {
+    const video = appendVideo();
+    await start(bothOn);
+
+    setVisibility('hidden');
+    video.remove();
+    setVisibility('visible');
+
+    // We hold the element, so it still exists and still answers `getMode`; the user is looking
+    // at whatever the page put in its place.
+    expect(controller.setModeCalls).toEqual([{ video, mode: PresentationMode.PIP }]);
+  });
+
+  it('restores once, not on every later return', async () => {
+    const video = appendVideo();
+    await start(bothOn);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+    setVisibility('visible');
+
+    expect(controller.setModeCalls).toEqual([
+      { video, mode: PresentationMode.PIP },
+      { video, mode: PresentationMode.INLINE },
+    ]);
+  });
+
+  it('floats and restores again on the next round trip', async () => {
+    const video = appendVideo();
+    await start(bothOn);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(controller.setModeCalls).toEqual([
+      { video, mode: PresentationMode.PIP },
+      { video, mode: PresentationMode.INLINE },
+      { video, mode: PresentationMode.PIP },
+      { video, mode: PresentationMode.INLINE },
+    ]);
+  });
+
+  it('ignores a prerendered document, which is neither hidden nor visible', async () => {
+    const video = appendVideo();
+    await start(bothOn);
+
+    setVisibility('hidden');
+    setVisibility('prerender' as DocumentVisibilityState);
+
+    expect(controller.setModeCalls).toEqual([{ video, mode: PresentationMode.PIP }]);
+  });
+
+  it('reads the setting at the moment of return, which is how it is switched on', async () => {
+    const video = appendVideo();
+    const started = await start({ autoPipOnTabHide: true, autoRestoreOnTabReturn: false });
+
+    setVisibility('hidden');
+    await saveSettings({ autoRestoreOnTabReturn: true });
+    await macrotask();
+    expect(started.restoreEnabled).toBe(true);
+
+    setVisibility('visible');
+
+    // Not a corner case but *the* first-use path: turning this on means leaving the video's tab
+    // for the options page, which is the tab switch that floats it. The live setting is what
+    // the user is looking at; a value latched when the tab hid would answer their first try
+    // with nothing happening.
+    expect(controller.setModeCalls).toEqual([
+      { video, mode: PresentationMode.PIP },
+      { video, mode: PresentationMode.INLINE },
+    ]);
+  });
+
+  it('turns on without a page reload (RRR §3)', async () => {
+    const video = appendVideo();
+    const started = await start({ autoPipOnTabHide: true, autoRestoreOnTabReturn: false });
+
+    await saveSettings({ autoRestoreOnTabReturn: true });
+    await macrotask();
+    expect(started.restoreEnabled).toBe(true);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(controller.modeOf(video)).toBe(PresentationMode.INLINE);
+  });
+
+  it('turns off without a page reload', async () => {
+    const video = appendVideo();
+    const started = await start(bothOn);
+
+    await saveSettings({ autoRestoreOnTabReturn: false });
+    await macrotask();
+    expect(started.restoreEnabled).toBe(false);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(controller.modeOf(video)).toBe(PresentationMode.PIP);
+  });
+
+  it('starts at the RRR §3 default, which is safe because its parent does not', async () => {
+    installFakeBrowser({ items: { [SETTINGS_KEY]: { autoRestoreOnTabReturn: false } } });
+    const started = enableAutoPip({ controller });
+    binding = started;
+    appendVideo();
+
+    // Unlike `enabled`, this one starts at the default rather than at `false` — and the window
+    // where it disagrees with storage cannot act, because floating a video at all needs
+    // `enabled`, which is still false. Both halves are asserted, since the first alone would
+    // pass against a binding that floats videos before it has been told to.
+    expect(started.enabled).toBe(false);
+    expect(started.restoreEnabled).toBe(DEFAULTS.autoRestoreOnTabReturn);
+
+    setVisibility('hidden');
+    setVisibility('visible');
+    expect(controller.setModeCalls).toEqual([]);
+
+    await started.ready;
+    expect(started.restoreEnabled).toBe(false);
+  });
+
+  it('drops its mode subscription on disable', async () => {
+    const video = appendVideo();
+    const started = await start(bothOn);
+
+    setVisibility('hidden');
+    // Two: `togglePiP`'s own watch, and this binding's claim.
+    expect(controller.listenerCount(video)).toBe(2);
+
+    started.disable();
+    binding = null;
+
+    expect(controller.listenerCount(video)).toBe(1);
+  });
+});
+
+/**
  * The composition root, end to end. Last in the file and imported once (DECISIONS 90): the
  * import attaches listeners to this file's single jsdom document and never detaches them.
  *
@@ -503,8 +746,10 @@ describe('enableAutoPip', () => {
  * the owner found the toggle in (DECISIONS 163).
  */
 describe('the composition root wires auto-PiP', () => {
-  it('floats the playing video when the tab hides', async () => {
-    installFakeBrowser({ items: { [SETTINGS_KEY]: { autoPipOnTabHide: true } } });
+  it('floats the playing video when the tab hides, and puts it back when it returns', async () => {
+    installFakeBrowser({
+      items: { [SETTINGS_KEY]: { autoPipOnTabHide: true, autoRestoreOnTabReturn: true } },
+    });
 
     const { setArgs } = appendStubbedVideo({ paused: false, mode: PresentationMode.INLINE });
 
@@ -514,7 +759,11 @@ describe('the composition root wires auto-PiP', () => {
     await macrotask();
 
     setVisibility('hidden');
+    setVisibility('visible');
 
-    expect(setArgs).toEqual([PresentationMode.PIP]);
+    // Both halves through the shipped wiring, because a feature that is correct and unreachable
+    // is the state the owner found the last toggle in (DECISIONS 163). The import happens once
+    // per file, so this is the only place the return half can be seen end to end.
+    expect(setArgs).toEqual([PresentationMode.PIP, PresentationMode.INLINE]);
   });
 });

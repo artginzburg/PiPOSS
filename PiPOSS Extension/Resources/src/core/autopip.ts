@@ -40,7 +40,12 @@
  * a prerendered document nobody saw.
  *
  * Videos are looked up when the tab hides, so there is nothing to watch and no `MutationObserver`
- * here. Coming back does **not** take the video out of PiP: the user may have kept it floating.
+ * here. Coming back does **not** take the video out of PiP unless `autoRestoreOnTabReturn` is on —
+ * off by default, and even then it acts only on a video *this binding* floated and that has been in
+ * PiP continuously since (see `claim` below). RRR §4.6's objection is "the user may have kept it
+ * floating", and that is what those two conditions answer: a window the user chose, entered or
+ * re-entered by hand is never ours to take away — which is also why that setting may default to
+ * on while the one that floats anything at all defaults to off.
  */
 import { type PresentationController, PresentationMode, togglePiP } from './presentation';
 import { DEFAULTS, type Settings, followSettings } from './settings';
@@ -123,6 +128,15 @@ export interface AutoPipBinding {
    */
   readonly enabled: boolean;
 
+  /**
+   * Whether the return half is on right now — `autoRestoreOnTabReturn`, which starts at RRR §3's
+   * default of `true` rather than at `false` like {@link enabled}. The asymmetry is safe and not
+   * an oversight: this flag is consulted only for a video *this binding* floated, and floating
+   * one requires {@link enabled}, which is still `false` until the stored settings arrive. There
+   * is no window in which a `true` here can act on anything.
+   */
+  readonly restoreEnabled: boolean;
+
   /** `followSettings`'s barrier: resolves once the stored settings have been applied. */
   readonly ready: Promise<void>;
 
@@ -143,10 +157,45 @@ export function enableAutoPip({
   target = document,
 }: EnableAutoPipOptions): AutoPipBinding {
   let enabled = DEFAULTS.autoPipOnTabHide;
+  let restoreEnabled = DEFAULTS.autoRestoreOnTabReturn;
 
-  const handleVisibilityChange = (): void => {
+  /**
+   * The video *this binding* floated on the last tab hide, and nothing else — the whole claim
+   * the return half rests on. A video the user floated themselves is never in here, so the
+   * setting cannot take away a floating window they chose to keep, which is the objection RRR
+   * §4.6 raises against restoring on return at all.
+   */
+  let floated: HTMLVideoElement | null = null;
+
+  /** Undoes the mode subscription belonging to {@link floated}. */
+  let releaseFloated: () => void = () => {};
+
+  /** Drop the claim: after acting on it, when it ends, and on `disable`. */
+  const forget = (): void => {
+    releaseFloated();
+    releaseFloated = () => {};
+    floated = null;
+  };
+
+  /**
+   * Take the claim on a video we have just asked to float.
+   *
+   * The subscription is what makes the claim expire honestly. Reading the live mode on return
+   * would already refuse a video that is no longer in PiP, but not one the user took *out* and
+   * then put *back* by hand while the tab was hidden — same mode, entirely different intent.
+   * `onModeChange` is the browser's own report (DECISIONS 170), so any exit ends our claim
+   * whether it was the system PiP window's close button, the player's control or our hotkey.
+   */
+  const claim = (video: HTMLVideoElement): void => {
+    forget();
+    floated = video;
+    releaseFloated = controller.onModeChange(video, () => {
+      if (controller.getMode(video) !== PresentationMode.PIP) forget();
+    });
+  };
+
+  const handleTabHidden = (): void => {
     if (!enabled) return;
-    if (target.visibilityState !== 'hidden') return;
 
     const video = pickAutoPipVideo(getVideos(target), controller);
     if (!video) return;
@@ -156,6 +205,46 @@ export function enableAutoPip({
     // pointing at whatever mode the video was in the *last* time somebody toggled —
     // and the user's next hotkey press would put them into a mode they were never in.
     togglePiP(video, controller);
+    claim(video);
+  };
+
+  /**
+   * The return half, RRR §4.6's opt-in: put our own floating video back where it came from.
+   *
+   * `togglePiP` again rather than `setMode(INLINE)`, because "where it came from" is exactly
+   * what its restore record holds — fullscreen included, for the user who floated out of a
+   * fullscreen player. Two honest limits, both degrading to inline rather than to anything
+   * wedged:
+   *
+   * 1. **A fullscreen restore will usually be refused.** `requestFullscreen` wants a user
+   *    gesture and a `visibilitychange` is not one, so the request that BF19 makes goes out and
+   *    is dropped — `enterFullscreen` already swallows that rejection. The mode restore itself
+   *    is a PiP *exit*, which carries no such requirement.
+   * 2. The setting is read **now**, not latched when the tab hid, because switching it on is
+   *    itself a tab switch: the user leaves the video for the options page, which floats it, and
+   *    the first return has to be the one that demonstrates the feature. The claim is dropped
+   *    either way, so a return with the setting off does not leave a video that can be restored
+   *    by a later, unrelated return.
+   */
+  const handleTabVisible = (): void => {
+    const video = floated;
+    if (!video) return;
+    forget();
+
+    if (!restoreEnabled) return;
+    // A player the page has since rebuilt: the element still exists because we hold it, but
+    // nothing that happens to it is visible to the user any more.
+    if (!video.isConnected) return;
+    if (controller.getMode(video) !== PresentationMode.PIP) return;
+
+    togglePiP(video, controller);
+  };
+
+  const handleVisibilityChange = (): void => {
+    // Named states, not `!== 'hidden'`: `prerender` is neither of the two moments this
+    // feature is about, and acting on it would float a video nobody has seen yet.
+    if (target.visibilityState === 'hidden') handleTabHidden();
+    else if (target.visibilityState === 'visible') handleTabVisible();
   };
 
   // `passive`: this never calls `preventDefault`, and saying so lets the browser
@@ -164,6 +253,7 @@ export function enableAutoPip({
 
   const { ready, unsubscribe } = followSettings((settings: Settings) => {
     enabled = settings.autoPipOnTabHide;
+    restoreEnabled = settings.autoRestoreOnTabReturn;
   });
 
   let attached = true;
@@ -172,6 +262,9 @@ export function enableAutoPip({
     get enabled(): boolean {
       return enabled;
     },
+    get restoreEnabled(): boolean {
+      return restoreEnabled;
+    },
     ready,
     disable(): void {
       if (!attached) return;
@@ -179,6 +272,7 @@ export function enableAutoPip({
 
       target.removeEventListener('visibilitychange', handleVisibilityChange);
       unsubscribe();
+      forget();
     },
   };
 }

@@ -127,6 +127,7 @@ interface Controls {
   hotkeyReset: HTMLButtonElement;
   hotkeyDisable: HTMLButtonElement;
   autoPip: HTMLInputElement;
+  autoRestore: HTMLInputElement;
   youtubeButton: HTMLInputElement;
   saveError: HTMLElement;
 }
@@ -168,6 +169,7 @@ export function initOptionsPage(doc: Document = document): OptionsPage {
   controls.hotkeyReset.addEventListener('click', handleResetClick);
   controls.hotkeyDisable.addEventListener('click', handleDisableClick);
   controls.autoPip.addEventListener('change', handleAutoPipChange);
+  controls.autoRestore.addEventListener('change', handleAutoRestoreChange);
   controls.youtubeButton.addEventListener('change', handleYouTubeButtonChange);
 
   // RRR §4.3: the state must live-update. Safari's access popover is a different surface entirely,
@@ -201,6 +203,7 @@ export function initOptionsPage(doc: Document = document): OptionsPage {
       controls.hotkeyReset.removeEventListener('click', handleResetClick);
       controls.hotkeyDisable.removeEventListener('click', handleDisableClick);
       controls.autoPip.removeEventListener('change', handleAutoPipChange);
+      controls.autoRestore.removeEventListener('change', handleAutoRestoreChange);
       controls.youtubeButton.removeEventListener('change', handleYouTubeButtonChange);
 
       permissions?.onAdded.removeListener(handlePermissionsChanged);
@@ -339,6 +342,21 @@ export function initOptionsPage(doc: Document = document): OptionsPage {
     commit({ autoPipOnTabHide: controls.autoPip.checked });
   }
 
+  /**
+   * Written independently of `autoPipOnTabHide` rather than forced off with it: the two are one
+   * feature to the user but two answers, and clearing this one behind their back would lose it
+   * every time they turned the parent off for an afternoon. Nothing is ever remembered while the
+   * parent is off, so the stored value is inert until it means something again — which is also
+   * what lets this default to on while the parent defaults to off.
+   *
+   * The control is `disabled` in that state (see `render`), so this handler cannot fire from a
+   * click then. It can still fire from a test or a future layout that enables it, and writing
+   * the checkbox's own value is the right answer either way.
+   */
+  function handleAutoRestoreChange(): void {
+    commit({ autoRestoreOnTabReturn: controls.autoRestore.checked });
+  }
+
   function handleYouTubeButtonChange(): void {
     commit({ youtubeButton: controls.youtubeButton.checked });
   }
@@ -392,6 +410,11 @@ export function initOptionsPage(doc: Document = document): OptionsPage {
     // fields, this project's README, the keycap on the desk.
     controls.hotkeyField.value = key.toUpperCase();
     controls.autoPip.checked = settings.autoPipOnTabHide;
+    controls.autoRestore.checked = settings.autoRestoreOnTabReturn;
+    // Disabled, not hidden and not unchecked: with its parent off it can do nothing, and a live
+    // control that does nothing is what the access section above refuses to be. The stored value
+    // is still shown, because it is still the answer for the moment the parent comes back on.
+    controls.autoRestore.disabled = !settings.autoPipOnTabHide;
     controls.youtubeButton.checked = settings.youtubeButton;
 
     setHotkeyStatus(
@@ -421,6 +444,7 @@ function findControls(doc: Document): Controls | null {
     hotkeyReset: byTestId<HTMLButtonElement>(doc, 'hotkey-reset'),
     hotkeyDisable: byTestId<HTMLButtonElement>(doc, 'hotkey-disable'),
     autoPip: byTestId<HTMLInputElement>(doc, 'toggle-autopip'),
+    autoRestore: byTestId<HTMLInputElement>(doc, 'toggle-auto-restore'),
     youtubeButton: byTestId<HTMLInputElement>(doc, 'toggle-youtube-button'),
     saveError: byTestId<HTMLElement>(doc, 'save-error'),
   };
