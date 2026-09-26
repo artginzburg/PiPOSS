@@ -166,7 +166,7 @@ Against `Casks/piposs.rb` at tap commit `077aa0e` (fetched read-only —
 +  desc "Picture in Picture for any Safari video, by hotkey or toolbar button"
    homepage "https://github.com/artginzburg/PiPOSS"
 
-   depends_on macos: :big_sur
+   depends_on :macos
 
    app "PiPOSS.app"
 
@@ -279,7 +279,7 @@ rm -rf /opt/homebrew/Library/Taps/piposs-audittest
   why `brew info` on the throwaway reports the *real* `Installed (on request) …
   1.0.3` line — ignore it.
 
-### 2.3 Why `depends_on macos: :big_sur` does not change
+### 2.3 Why the macOS floor does not change
 
 The v2 extension is Manifest V3 and therefore needs **Safari 15.4+** (RRR §2). That is not
 the same constraint as the app's, and Homebrew has no `depends_on` key for a Safari version.
@@ -300,6 +300,12 @@ floor (macOS 10.15), so on every system this cask will install on, Safari 15.4 o
 later is obtainable through Software Update. The problem is never "your Mac
 can't", it is only "your Safari is old" — which is why the caveat's remedy is
 always valid, and why `:monterey` would exclude working users for nothing.
+
+Since 2026-09 the cask says `depends_on :macos` instead of `macos: :big_sur`:
+Homebrew no longer supports anything older than Big Sur, and its
+`Homebrew/OSDependsOn` style rule rejects a minimum equal to its own as
+redundant, failing `brew test-bot` for the whole tap. The floor is the same
+Big Sur; only the spelling changed.
 
 ### 2.4 Why a `caveats` line, and not the alternatives
 

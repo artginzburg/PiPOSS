@@ -2313,6 +2313,10 @@ BF19 — "fullscreen" is not a presentation mode of the video, and BF02 assumed 
      existing hide half already made that distinction (RRR §4.6 names `'hidden'` for the same
      reason). The return half inherits it rather than treating "not hidden" as "back".
 325. Content bundle 8050 → 8259 B, 67% of the 12 KB budget (RRR §5.2). 491 tests, up from 471.
+326. **The cask spells the Big Sur floor `depends_on :macos`.** Homebrew's own minimum
+     reached Big Sur, and its `Homebrew/OSDependsOn` rule now fails `macos: :big_sur` as
+     redundant, which broke `brew test-bot` for the whole tap (seen on the WheelClick 1.1.7
+     bump, 2026-09-26). Same floor, so 210 stands; only the spelling changed.
 
 Predictions for acceptance, with their treatment ready:
 
